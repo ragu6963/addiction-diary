@@ -6,6 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import { Animated, Dimensions, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AlcoholCalendarScreen from "./alcohol-calendar";
 import CalendarScreen from "./calendar";
 import RecordsScreen from "./records";
 import StatisticsScreen from "./statistics";
@@ -39,6 +40,8 @@ export default function MainScreen() {
     switch (currentScreen) {
       case "calendar":
         return <CalendarScreen />;
+      case "alcohol-calendar":
+        return <AlcoholCalendarScreen />;
       case "statistics":
         return <StatisticsScreen />;
       case "records":
@@ -65,12 +68,14 @@ export default function MainScreen() {
 
         <ThemedText style={staticMainStyles.navTitle}>
           {currentScreen === "calendar"
-            ? "달력"
+            ? "금욕 달력"
+            : currentScreen === "alcohol-calendar"
+            ? "금주 달력"
             : currentScreen === "statistics"
             ? "통계"
             : currentScreen === "records"
             ? "기록"
-            : "달력"}
+            : "금욕 달력"}
         </ThemedText>
 
         <ThemedView style={staticMainStyles.navSpacer} />
@@ -102,7 +107,18 @@ export default function MainScreen() {
           style={styles.menuItem}
           onPress={() => navigateToScreen("calendar")}
         >
-          <ThemedText style={staticMainStyles.menuItemText}>달력</ThemedText>
+          <ThemedText style={staticMainStyles.menuItemText}>
+            금욕 달력
+          </ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigateToScreen("alcohol-calendar")}
+        >
+          <ThemedText style={staticMainStyles.menuItemText}>
+            금주 달력
+          </ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity

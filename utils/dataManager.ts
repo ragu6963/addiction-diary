@@ -22,10 +22,13 @@ export interface MarkedDates {
 }
 
 const STORAGE_KEY = "masturbationRecords";
+const ALCOHOL_STORAGE_KEY = "alcoholRecords";
 
 // 데이터 캐시 (메모리 캐싱)
 let dataCache: RecordData | null = null;
 let cacheTimestamp: number = 0;
+let alcoholDataCache: RecordData | null = null;
+let alcoholCacheTimestamp: number = 0;
 const CACHE_DURATION = 5000; // 5초 캐시
 
 /**
@@ -275,10 +278,181 @@ export const formatDate = (dateStr: string): string => {
 };
 
 /**
+ * 금주 데이터를 로드합니다 (캐시 최적화)
+ */
+export const loadAlcoholRecordData = async (): Promise<RecordData> => {
+  try {
+    // 캐시된 데이터가 유효한지 확인
+    const now = Date.now();
+    if (alcoholDataCache && now - alcoholCacheTimestamp < CACHE_DURATION) {
+      return alcoholDataCache;
+    }
+
+    const savedData = await AsyncStorage.getItem(ALCOHOL_STORAGE_KEY);
+    if (!savedData) {
+      alcoholDataCache = {};
+      alcoholCacheTimestamp = now;
+      return {};
+    }
+
+    const parsedData = JSON.parse(savedData);
+
+    // 기존 데이터가 배열인 경우 (하위 호환성)
+    if (Array.isArray(parsedData)) {
+      const convertedData: RecordData = {};
+      parsedData.forEach((date: string) => {
+        convertedData[date] = {
+          count: 1,
+          lastRecordTime: "기록 시간 없음",
+          records: [
+            {
+              id: `${date}-1`,
+              timestamp: new Date(date).toISOString(),
+              time: "기록 시간 없음",
+            },
+          ],
+        };
+      });
+      alcoholDataCache = convertedData;
+      alcoholCacheTimestamp = now;
+      return convertedData;
+    }
+
+    // 새로운 객체 형태인 경우
+    const recordData: RecordData = {};
+    Object.keys(parsedData).forEach((date) => {
+      const data = parsedData[date];
+      recordData[date] = {
+        count: data.count || 1,
+        lastRecordTime: data.lastRecordTime || "기록 시간 없음",
+        records: data.records || [
+          {
+            id: `${date}-1`,
+            timestamp: new Date(date).toISOString(),
+            time: data.lastRecordTime || "기록 시간 없음",
+          },
+        ],
+      };
+    });
+
+    alcoholDataCache = recordData;
+    alcoholCacheTimestamp = now;
+    return recordData;
+  } catch (error) {
+    console.error("금주 데이터 로드 실패:", error);
+    return {};
+  }
+};
+
+/**
+ * 금주 데이터를 저장합니다 (캐시 무효화)
+ */
+export const saveAlcoholRecordData = async (
+  data: RecordData
+): Promise<void> => {
+  try {
+    await AsyncStorage.setItem(ALCOHOL_STORAGE_KEY, JSON.stringify(data));
+    // 캐시 업데이트
+    alcoholDataCache = data;
+    alcoholCacheTimestamp = Date.now();
+  } catch (error) {
+    console.error("금주 데이터 저장 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 새로운 금주 기록을 추가합니다
+ */
+export const addNewAlcoholRecord = async (
+  dateStr: string
+): Promise<RecordData> => {
+  const data = await loadAlcoholRecordData();
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const recordId = `${dateStr}-${Date.now()}`;
+
+  if (!data[dateStr]) {
+    data[dateStr] = {
+      count: 1,
+      lastRecordTime: timeStr,
+      records: [
+        {
+          id: recordId,
+          timestamp: now.toISOString(),
+          time: timeStr,
+        },
+      ],
+    };
+  } else {
+    data[dateStr].count += 1;
+    data[dateStr].lastRecordTime = timeStr;
+    data[dateStr].records.push({
+      id: recordId,
+      timestamp: now.toISOString(),
+      time: timeStr,
+    });
+  }
+
+  await saveAlcoholRecordData(data);
+  return data;
+};
+
+/**
+ * 특정 금주 기록을 삭제합니다
+ */
+export const deleteAlcoholRecord = async (
+  dateStr: string,
+  recordId: string
+): Promise<RecordData> => {
+  const data = await loadAlcoholRecordData();
+
+  if (data[dateStr]) {
+    data[dateStr].records = data[dateStr].records.filter(
+      (r) => r.id !== recordId
+    );
+    data[dateStr].count = data[dateStr].records.length;
+
+    if (data[dateStr].count === 0) {
+      delete data[dateStr];
+    } else {
+      // 마지막 기록 시간 업데이트
+      const lastRecord =
+        data[dateStr].records[data[dateStr].records.length - 1];
+      data[dateStr].lastRecordTime = lastRecord.time;
+    }
+  }
+
+  await saveAlcoholRecordData(data);
+  return data;
+};
+
+/**
+ * 모든 금주 기록을 삭제합니다
+ */
+export const clearAllAlcoholRecords = async (): Promise<void> => {
+  try {
+    await AsyncStorage.removeItem(ALCOHOL_STORAGE_KEY);
+    // 캐시 초기화
+    alcoholDataCache = null;
+    alcoholCacheTimestamp = 0;
+  } catch (error) {
+    console.error("금주 기록 초기화 실패:", error);
+    throw error;
+  }
+};
+
+/**
  * 캐시 무효화 함수
  */
 export const invalidateCache = (): void => {
   dataCache = null;
   cacheTimestamp = 0;
+  alcoholDataCache = null;
+  alcoholCacheTimestamp = 0;
   dateFormatCache.clear();
 };

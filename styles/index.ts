@@ -3,6 +3,7 @@
 export { createCalendarTheme, useStyles, useTheme } from "@/hooks/use-styles";
 
 // 화면별 스타일 팩토리들
+export { createAlcoholCalendarStyles } from "./alcohol-calendar.styles";
 export { createCalendarStyles } from "./calendar.styles";
 export { createCommonStyles, staticCommonStyles } from "./common.styles";
 export { createMainStyles, staticMainStyles } from "./main.styles";
