@@ -1,9 +1,10 @@
 import { Theme } from "@/constants/design-tokens";
-import { createCommonStyles } from "./common.styles";
+import { createCommonStyles, createMixins } from "./common.styles";
 
 // 기록 화면 전용 스타일
 export const createRecordsStyles = (theme: Theme) => {
   const commonStyles = createCommonStyles(theme);
+  const mixins = createMixins(theme);
 
   return {
     ...commonStyles,
@@ -12,9 +13,7 @@ export const createRecordsStyles = (theme: Theme) => {
       flex: 1,
     },
     recordHeader: {
-      flexDirection: "row" as const,
-      justifyContent: "space-between" as const,
-      alignItems: "center" as const,
+      ...mixins.flexRowBetween,
       marginBottom: theme.spacing[1],
     },
     recordType: {
@@ -40,18 +39,15 @@ export const createRecordsStyles = (theme: Theme) => {
       color: theme.colors.secondary,
     },
     listItem: {
+      ...mixins.flexRowBetween,
       backgroundColor: "transparent",
       borderRadius: theme.borderRadius.md,
       padding: theme.spacing[4],
       marginBottom: theme.spacing[2],
-      flexDirection: "row" as const,
-      justifyContent: "space-between" as const,
-      alignItems: "center" as const,
     },
     // 타입별 통계 스타일
     typeStatsContainer: {
-      flexDirection: "row" as const,
-      justifyContent: "space-between" as const,
+      ...mixins.flexRowBetween,
       gap: theme.spacing[4],
     },
     typeStatsColumn: {
@@ -59,8 +55,7 @@ export const createRecordsStyles = (theme: Theme) => {
       padding: theme.spacing[3],
     },
     typeStatsTitle: {
-      fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.bold,
+      ...mixins.titleVariants.small,
       marginBottom: theme.spacing[2],
       textAlign: "center" as const,
     },
