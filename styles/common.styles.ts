@@ -24,46 +24,46 @@ export const createMixins = (theme: Theme) => ({
     alignItems: "center" as const,
   },
 
-  // 컬럼 레이아웃
+  // 컬럼 레이아웃 (미니멀)
   columnLayout: {
     flex: 1,
-    padding: theme.spacing[3],
-    backgroundColor: theme.colors.background,
+    padding: theme.spacing[2],
+    backgroundColor: "transparent",
   },
 
-  // 제목 스타일 변형
+  // 제목 스타일 변형 (미니멀)
   titleVariants: {
     large: {
-      fontSize: theme.typography.fontSize["3xl"],
-      fontWeight: theme.typography.fontWeight.bold,
+      fontSize: theme.typography.fontSize["2xl"],
+      fontWeight: theme.typography.fontWeight.normal,
       color: theme.colors.text,
     },
     medium: {
-      fontSize: theme.typography.fontSize["2xl"],
-      fontWeight: theme.typography.fontWeight.bold,
+      fontSize: theme.typography.fontSize.xl,
+      fontWeight: theme.typography.fontWeight.normal,
       color: theme.colors.text,
     },
     small: {
-      fontSize: theme.typography.fontSize.lg,
-      fontWeight: theme.typography.fontWeight.semibold,
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.normal,
       color: theme.colors.text,
     },
   },
 
-  // 버튼 스타일 변형
+  // 버튼 스타일 변형 (완전 미니멀)
   buttonVariants: {
     primary: {
-      backgroundColor: theme.colors.primary,
-      paddingVertical: theme.spacing[3],
-      paddingHorizontal: theme.spacing[4],
-      width: "50%",
+      backgroundColor: "transparent",
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[3],
+      width: "40%",
       alignSelf: "center" as const,
     },
     secondary: {
-      backgroundColor: theme.colors.secondary,
-      paddingVertical: theme.spacing[3],
-      paddingHorizontal: theme.spacing[4],
-      width: "50%",
+      backgroundColor: "transparent",
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[3],
+      width: "40%",
       alignSelf: "center" as const,
     },
   },
@@ -71,7 +71,7 @@ export const createMixins = (theme: Theme) => ({
 
 // 공통 컴포넌트 스타일
 export const createCommonStyles = (theme: Theme) => ({
-  // 카드 컨테이너 스타일 (모든 화면에서 공통 사용)
+  // 카드 컨테이너 스타일 (완전 미니멀)
   cardContainer: {
     backgroundColor: "transparent",
     borderWidth: 0,
@@ -81,16 +81,17 @@ export const createCommonStyles = (theme: Theme) => ({
     shadowOpacity: 0,
     shadowRadius: 0,
     elevation: 0,
-    marginBottom: theme.spacing[4],
+    marginBottom: theme.spacing[3],
     paddingHorizontal: 0,
     margin: 0,
+    padding: 0,
   },
 
-  // 섹션 제목 스타일 (모든 화면에서 공통 사용)
+  // 섹션 제목 스타일 (미니멀)
   sectionTitle: {
-    marginBottom: theme.spacing[4],
-    fontWeight: theme.typography.fontWeight.bold,
-    fontSize: theme.typography.fontSize["2xl"],
+    marginBottom: theme.spacing[3],
+    fontWeight: theme.typography.fontWeight.normal,
+    fontSize: theme.typography.fontSize.lg,
     color: theme.colors.text,
   },
 
@@ -133,11 +134,11 @@ export const createCommonStyles = (theme: Theme) => ({
     flex: 1,
   },
 
-  // 스크롤 콘텐츠 스타일
+  // 스크롤 콘텐츠 스타일 (미니멀)
   scrollContent: {
-    paddingHorizontal: theme.spacing[4],
-    paddingTop: theme.spacing[5],
-    paddingBottom: theme.spacing[5],
+    paddingHorizontal: theme.spacing[3],
+    paddingTop: theme.spacing[3],
+    paddingBottom: theme.spacing[3],
   },
 });
 

@@ -164,8 +164,18 @@ const StatisticsScreen = memo(() => {
             <Text h4 style={styles.sectionTitle}>
               연속 현황
             </Text>
-            <ThemedView style={styles.streakComparisonContainer}>
-              <ThemedView style={styles.streakComparisonColumn}>
+            <ThemedView
+              style={[
+                styles.streakComparisonContainer,
+                { backgroundColor: "transparent" },
+              ]}
+            >
+              <ThemedView
+                style={[
+                  styles.streakComparisonColumn,
+                  { backgroundColor: "transparent" },
+                ]}
+              >
                 <Text
                   h4
                   style={[
@@ -201,7 +211,12 @@ const StatisticsScreen = memo(() => {
                 </ThemedView>
               </ThemedView>
 
-              <ThemedView style={styles.streakComparisonColumn}>
+              <ThemedView
+                style={[
+                  styles.streakComparisonColumn,
+                  { backgroundColor: "transparent" },
+                ]}
+              >
                 <Text
                   h4
                   style={[
@@ -247,8 +262,18 @@ const StatisticsScreen = memo(() => {
             <Text h4 style={styles.sectionTitle}>
               타입별 비교
             </Text>
-            <ThemedView style={styles.comparisonContainer}>
-              <ThemedView style={styles.comparisonColumn}>
+            <ThemedView
+              style={[
+                styles.comparisonContainer,
+                { backgroundColor: "transparent" },
+              ]}
+            >
+              <ThemedView
+                style={[
+                  styles.comparisonColumn,
+                  { backgroundColor: "transparent" },
+                ]}
+              >
                 <Text
                   style={[
                     styles.comparisonTitle,
@@ -269,7 +294,12 @@ const StatisticsScreen = memo(() => {
                 </ThemedView>
               </ThemedView>
 
-              <ThemedView style={styles.comparisonColumn}>
+              <ThemedView
+                style={[
+                  styles.comparisonColumn,
+                  { backgroundColor: "transparent" },
+                ]}
+              >
                 <Text
                   style={[
                     styles.comparisonTitle,
@@ -298,8 +328,18 @@ const StatisticsScreen = memo(() => {
             <Text h4 style={styles.sectionTitle}>
               최근 통계
             </Text>
-            <ThemedView style={styles.recentStatsContainer}>
-              <ThemedView style={styles.recentStatsColumn}>
+            <ThemedView
+              style={[
+                styles.recentStatsContainer,
+                { backgroundColor: "transparent" },
+              ]}
+            >
+              <ThemedView
+                style={[
+                  styles.recentStatsColumn,
+                  { backgroundColor: "transparent" },
+                ]}
+              >
                 <Text
                   style={[
                     styles.recentStatsTitle,
@@ -342,7 +382,12 @@ const StatisticsScreen = memo(() => {
                 </ThemedView>
               </ThemedView>
 
-              <ThemedView style={styles.recentStatsColumn}>
+              <ThemedView
+                style={[
+                  styles.recentStatsColumn,
+                  { backgroundColor: "transparent" },
+                ]}
+              >
                 <Text
                   style={[
                     styles.recentStatsTitle,

@@ -207,6 +207,7 @@ const AlcoholCalendarScreen = memo(() => {
           title="기록하기"
           onPress={onRecordPress}
           buttonStyle={styles.recordButton}
+          titleStyle={styles.recordButtonText}
         />
       </Card>
     </ThemedView>

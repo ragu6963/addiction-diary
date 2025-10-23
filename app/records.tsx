@@ -101,9 +101,15 @@ const RecordsScreen = memo(() => {
           : theme.appColors.alcohol.primary;
 
       return (
-        <ThemedView style={styles.listItem}>
-          <ThemedView style={styles.recordInfo}>
-            <ThemedView style={styles.recordHeader}>
+        <ThemedView
+          style={[styles.listItem, { backgroundColor: "transparent" }]}
+        >
+          <ThemedView
+            style={[styles.recordInfo, { backgroundColor: "transparent" }]}
+          >
+            <ThemedView
+              style={[styles.recordHeader, { backgroundColor: "transparent" }]}
+            >
               <Text style={[styles.recordType, { color: typeColor }]}>
                 {typeIcon} {typeText}
               </Text>
@@ -115,7 +121,9 @@ const RecordsScreen = memo(() => {
               {item.formattedDate} {item.recordTime}
             </Text>
           </ThemedView>
-          <ThemedView style={styles.recordActions}>
+          <ThemedView
+            style={[styles.recordActions, { backgroundColor: "transparent" }]}
+          >
             <TouchableOpacity
               onPress={() => onDeleteRecord(item.id, item.date, item.type)}
             >
@@ -189,6 +197,7 @@ const RecordsScreen = memo(() => {
             title="모든 기록 삭제"
             onPress={onResetPress}
             buttonStyle={styles.deleteAllButton}
+            titleStyle={styles.deleteAllButtonText}
           />
         </Card>
       </>

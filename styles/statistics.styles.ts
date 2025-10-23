@@ -13,7 +13,7 @@ export const createStatisticsStyles = (theme: Theme) => {
       alignItems: "center" as const,
       marginBottom: theme.spacing[3],
       paddingVertical: theme.spacing[2],
-      width: "100%",
+      width: "100%" as const,
     },
     streakNumber: {
       fontSize: theme.typography.fontSize["3xl"],
@@ -48,7 +48,7 @@ export const createStatisticsStyles = (theme: Theme) => {
     // 비교 섹션 스타일
     comparisonContainer: {
       ...mixins.flexRowBetween,
-      gap: theme.spacing[4],
+      gap: theme.spacing[2],
     },
     comparisonColumn: {
       ...mixins.columnLayout,
@@ -62,7 +62,7 @@ export const createStatisticsStyles = (theme: Theme) => {
     // 최근 통계 섹션 스타일
     recentStatsContainer: {
       ...mixins.flexRowBetween,
-      gap: theme.spacing[4],
+      gap: theme.spacing[2],
     },
     recentStatsColumn: {
       ...mixins.columnLayout,

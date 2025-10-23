@@ -41,7 +41,7 @@ export const createRecordsStyles = (theme: Theme) => {
     listItem: {
       ...mixins.flexRowBetween,
       backgroundColor: "transparent",
-      padding: theme.spacing[4],
+      padding: theme.spacing[2],
       marginBottom: theme.spacing[2],
     },
     // 타입별 통계 스타일
@@ -51,16 +51,23 @@ export const createRecordsStyles = (theme: Theme) => {
     },
     typeStatsColumn: {
       flex: 1,
-      padding: theme.spacing[3],
+      padding: theme.spacing[2],
     },
     typeStatsTitle: {
       ...mixins.titleVariants.small,
       marginBottom: theme.spacing[2],
       textAlign: "center" as const,
     },
-    // 삭제 버튼 스타일
+    // 삭제 버튼 스타일 (눈에 띄는 색상)
     deleteAllButton: {
       ...mixins.buttonVariants.secondary,
+      backgroundColor: theme.colors.error,
+      borderWidth: 0,
+    },
+    // 삭제 버튼 텍스트 스타일
+    deleteAllButtonText: {
+      color: theme.appColors.common.white,
+      fontWeight: theme.typography.fontWeight.normal,
     },
   };
 };

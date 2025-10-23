@@ -64,19 +64,24 @@ export const createCalendarVariantStyles = (
   // 각 달력별 추가 스타일
   const mixins = createMixins(theme);
   const variantStyles = {
-    // 공통 기록 버튼 스타일
+    // 공통 기록 버튼 스타일 (테마 색상 적용)
     recordButton: {
       ...mixins.buttonVariants.primary,
       backgroundColor: accentColor,
     },
-    // 달력 네비게이션 버튼 스타일
+    // 기록 버튼 텍스트 스타일
+    recordButtonText: {
+      color: theme.appColors.common.white,
+      fontWeight: theme.typography.fontWeight.normal,
+    },
+    // 달력 네비게이션 버튼 스타일 (완전 미니멀)
     navButton: {
-      width: 40,
-      height: 40,
+      width: 32,
+      height: 32,
       alignSelf: "center" as const,
       backgroundColor: "transparent",
-      paddingVertical: theme.spacing[2],
-      paddingHorizontal: theme.spacing[2],
+      paddingVertical: theme.spacing[1],
+      paddingHorizontal: theme.spacing[1],
     },
   };
 

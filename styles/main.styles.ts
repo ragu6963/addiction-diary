@@ -8,50 +8,50 @@ export const createMainStyles = (theme: Theme) => ({
     backgroundColor: theme.colors.background,
   },
   navBar: {
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    paddingHorizontal: theme.spacing[4],
-    paddingVertical: theme.spacing[2],
+    backgroundColor: "transparent",
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: theme.spacing[3],
     flexDirection: "row" as const,
     alignItems: "center" as const,
     justifyContent: "space-between" as const,
     height: 44,
   },
+  // 햄버거 버튼 동적 스타일
+  hamburgerButton: {
+    width: 28,
+    height: 24,
+    justifyContent: "space-between" as const,
+    paddingVertical: theme.spacing[1],
+    paddingHorizontal: theme.spacing[1],
+  },
+  hamburgerLine: {
+    height: 3,
+    backgroundColor: theme.colors.text,
+    borderRadius: 2,
+  },
   menuOverlay: {
     backgroundColor: theme.colors.text,
-    opacity: 0.3,
+    opacity: 0.1,
   },
   menuPanel: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.background,
     paddingTop: 44,
-    paddingHorizontal: theme.spacing[4],
-    ...theme.shadows.lg,
+    paddingHorizontal: theme.spacing[3],
   },
   menuItem: {
     backgroundColor: "transparent",
     marginVertical: theme.spacing[1],
-    marginHorizontal: theme.spacing[2],
-    paddingVertical: theme.spacing[4],
-    paddingHorizontal: theme.spacing[5],
+    marginHorizontal: 0,
+    paddingVertical: theme.spacing[3],
+    paddingHorizontal: theme.spacing[3],
   },
 });
 
 // 정적 스타일 (테마에 의존하지 않는 스타일)
 export const staticMainStyles = StyleSheet.create({
-  hamburgerButton: {
-    width: 24,
-    height: 20,
-    justifyContent: "space-between",
-    paddingVertical: 2,
-  },
-  hamburgerLine: {
-    height: 2,
-    backgroundColor: "#333",
-  },
   navTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "400",
     flex: 1,
     textAlign: "center",
     marginHorizontal: 12,
@@ -80,6 +80,6 @@ export const staticMainStyles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "400",
   },
 });
