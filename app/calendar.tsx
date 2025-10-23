@@ -29,10 +29,16 @@ const CalendarScreen = memo(() => {
       const marked: MarkedDates = {};
 
       Object.keys(recordData).forEach((date) => {
+        const count = recordData[date].count;
+        // 최대 5개까지 dot 표시 (너무 많으면 UI가 복잡해짐)
+        const maxDots = Math.min(count, 5);
+        const dots = Array.from({ length: maxDots }, () => ({
+          color: "#ff6b6b",
+        }));
+
         marked[date] = {
-          marked: true,
-          dotColor: "#ff6b6b",
-          count: recordData[date].count,
+          dots: dots,
+          count: count,
           lastRecordTime: recordData[date].lastRecordTime,
         };
       });
@@ -157,6 +163,7 @@ const CalendarScreen = memo(() => {
         <Calendar
           key={`${currentMonth.getFullYear()}-${currentMonth.getMonth()}`}
           markedDates={markedDates}
+          markingType={"multi-dot"}
           theme={calendarTheme}
           style={styles.calendar}
           monthFormat={""}

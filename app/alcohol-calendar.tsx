@@ -39,10 +39,16 @@ const AlcoholCalendarScreen = memo(() => {
       const marked: MarkedDates = {};
 
       Object.keys(recordData).forEach((date) => {
+        const count = recordData[date].count;
+        // 최대 5개까지 dot 표시 (너무 많으면 UI가 복잡해짐)
+        const maxDots = Math.min(count, 5);
+        const dots = Array.from({ length: maxDots }, () => ({
+          color: "#ff8c00", // 주황색 점으로 표시
+        }));
+
         marked[date] = {
-          marked: true,
-          dotColor: "#ff8c00", // 주황색 점으로 표시
-          count: recordData[date].count,
+          dots: dots,
+          count: count,
           lastRecordTime: recordData[date].lastRecordTime,
         };
       });
@@ -167,6 +173,7 @@ const AlcoholCalendarScreen = memo(() => {
         <Calendar
           key={`alcohol-${currentMonth.getFullYear()}-${currentMonth.getMonth()}`}
           markedDates={markedDates}
+          markingType={"multi-dot"}
           theme={calendarTheme}
           style={styles.calendar}
           monthFormat={""}

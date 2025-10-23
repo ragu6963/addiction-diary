@@ -16,6 +16,7 @@ export interface MarkedDates {
   [key: string]: {
     marked?: boolean;
     dotColor?: string;
+    dots?: { color: string }[];
     count?: number;
     lastRecordTime?: string;
   };
