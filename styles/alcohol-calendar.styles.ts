@@ -19,7 +19,7 @@ export const createAlcoholCalendarStyles = (theme: Theme) => {
       fontSize: theme.typography.fontSize["3xl"],
       fontWeight: theme.typography.fontWeight.bold,
       textAlign: "center" as const,
-      color: "#28a745", // 녹색 계열로 금욕 달력과 구별
+      color: "#ff8c00", // 주황색 계열로 금욕 달력과 구별
       marginBottom: theme.spacing[2],
     },
     streakSubtext: {
@@ -43,7 +43,7 @@ export const createAlcoholCalendarStyles = (theme: Theme) => {
     calendar: {},
     // 금주 전용 버튼 스타일
     recordButton: {
-      backgroundColor: "#28a745", // 녹색 계열
+      backgroundColor: "#ff8c00", // 주황색 계열
     },
   };
 };

@@ -2,65 +2,37 @@ import { ThemedView } from "@/components/themed-view";
 import { useTheme } from "@/hooks/use-styles";
 import { createRecordsStyles } from "@/styles/records.styles";
 import {
-  clearAllRecords,
-  deleteRecord,
-  formatDate,
-  loadRecordData,
+  clearAllCombinedRecords,
+  CombinedRecordItem,
+  deleteCombinedRecord,
+  loadCombinedRecords,
 } from "@/utils/dataManager";
 import { Button, Card, Text } from "@rneui/themed";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { Alert, FlatList, TouchableOpacity } from "react-native";
 
-interface RecordItem {
-  id: string;
-  date: string;
-  formattedDate: string;
-  recordTime: string;
-  recordNumber: number;
-  timestamp: string;
-}
-
 const RecordsScreen = memo(() => {
   const theme = useTheme();
   const styles = createRecordsStyles(theme);
 
-  const [records, setRecords] = useState<RecordItem[]>([]);
+  const [records, setRecords] = useState<CombinedRecordItem[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [totalDays, setTotalDays] = useState(0);
+  const [addictionRecords, setAddictionRecords] = useState(0);
+  const [alcoholRecords, setAlcoholRecords] = useState(0);
+  const [addictionDays, setAddictionDays] = useState(0);
+  const [alcoholDays, setAlcoholDays] = useState(0);
   const loadRecords = useCallback(async () => {
     try {
-      const recordData = await loadRecordData();
-      const allRecords: RecordItem[] = [];
-      const uniqueDates = new Set<string>();
+      const data = await loadCombinedRecords();
 
-      Object.keys(recordData)
-        .sort()
-        .reverse() // 최신 날짜부터 표시
-        .forEach((date) => {
-          uniqueDates.add(date);
-          const dayRecords = recordData[date].records || [];
-
-          dayRecords
-            .sort(
-              (a, b) =>
-                new Date(b.timestamp).getTime() -
-                new Date(a.timestamp).getTime()
-            ) // 최신 기록부터
-            .forEach((record, index) => {
-              allRecords.push({
-                id: record.id,
-                date,
-                formattedDate: formatDate(date),
-                recordTime: record.time,
-                recordNumber: dayRecords.length - index, // 역순으로 번호 매기기
-                timestamp: record.timestamp,
-              });
-            });
-        });
-
-      setRecords(allRecords);
-      setTotalRecords(allRecords.length);
-      setTotalDays(uniqueDates.size);
+      setRecords(data.records);
+      setTotalRecords(data.totalRecords);
+      setTotalDays(data.totalDays);
+      setAddictionRecords(data.addictionRecords);
+      setAlcoholRecords(data.alcoholRecords);
+      setAddictionDays(data.addictionDays);
+      setAlcoholDays(data.alcoholDays);
     } catch (error) {
       console.error("기록 로드 실패:", error);
     }
@@ -71,15 +43,16 @@ const RecordsScreen = memo(() => {
   }, [loadRecords]);
 
   const onDeleteRecord = useCallback(
-    (recordId: string, date: string) => {
-      Alert.alert("기록 삭제", "이 기록을 삭제하시겠습니까?", [
+    (recordId: string, date: string, type: "addiction" | "alcohol") => {
+      const typeText = type === "addiction" ? "금욕" : "금주";
+      Alert.alert("기록 삭제", `이 ${typeText} 기록을 삭제하시겠습니까?`, [
         { text: "취소", style: "cancel" },
         {
           text: "삭제",
           style: "destructive",
           onPress: async () => {
             try {
-              await deleteRecord(date, recordId);
+              await deleteCombinedRecord(recordId, date, type);
               await loadRecords();
               Alert.alert("완료", "기록이 삭제되었습니다.");
             } catch (error) {
@@ -96,7 +69,7 @@ const RecordsScreen = memo(() => {
   const onResetPress = useCallback(() => {
     Alert.alert(
       "모든 기록 삭제",
-      "모든 기록을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.",
+      "모든 금욕/금주 기록을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.",
       [
         { text: "취소", style: "cancel" },
         {
@@ -104,7 +77,7 @@ const RecordsScreen = memo(() => {
           style: "destructive",
           onPress: async () => {
             try {
-              await clearAllRecords();
+              await clearAllCombinedRecords();
               await loadRecords();
               Alert.alert("완료", "모든 기록이 삭제되었습니다.");
             } catch (error) {
@@ -119,25 +92,41 @@ const RecordsScreen = memo(() => {
 
   // 기록 아이템 렌더링 함수
   const renderRecordItem = useCallback(
-    ({ item }: { item: RecordItem }) => (
-      <ThemedView style={styles.listItem}>
-        <ThemedView style={styles.recordInfo}>
-          <Text style={styles.recordDate}>
-            {item.formattedDate} {item.recordTime}
-          </Text>
+    ({ item }: { item: CombinedRecordItem }) => {
+      const typeIcon = item.type === "addiction" ? "🔴" : "🟠";
+      const typeText = item.type === "addiction" ? "금욕" : "금주";
+      const typeColor = item.type === "addiction" ? "#ff6b6b" : "#ff8c00";
+
+      return (
+        <ThemedView style={styles.listItem}>
+          <ThemedView style={styles.recordInfo}>
+            <ThemedView style={styles.recordHeader}>
+              <Text style={[styles.recordType, { color: typeColor }]}>
+                {typeIcon} {typeText}
+              </Text>
+              <Text style={styles.recordCount}>
+                {item.count > 1 ? `${item.recordNumber}/${item.count}` : ""}
+              </Text>
+            </ThemedView>
+            <Text style={styles.recordDate}>
+              {item.formattedDate} {item.recordTime}
+            </Text>
+          </ThemedView>
+          <ThemedView style={styles.recordActions}>
+            <TouchableOpacity
+              onPress={() => onDeleteRecord(item.id, item.date, item.type)}
+            >
+              <Text style={styles.deleteButtonText}>삭제</Text>
+            </TouchableOpacity>
+          </ThemedView>
         </ThemedView>
-        <ThemedView style={styles.recordActions}>
-          <TouchableOpacity onPress={() => onDeleteRecord(item.id, item.date)}>
-            <Text style={styles.deleteButtonText}>삭제</Text>
-          </TouchableOpacity>
-        </ThemedView>
-      </ThemedView>
-    ),
+      );
+    },
     [onDeleteRecord, styles]
   );
 
   // 키 추출 함수
-  const keyExtractor = useCallback((item: RecordItem) => item.id, []);
+  const keyExtractor = useCallback((item: CombinedRecordItem) => item.id, []);
 
   // 빈 상태 렌더링 함수
   const renderEmptyComponent = useCallback(
@@ -150,16 +139,34 @@ const RecordsScreen = memo(() => {
     () => (
       <>
         <Card containerStyle={styles.cardContainer}>
-          <Text h4 style={styles.sectionTitle}>
-            기록 현황
-          </Text>
-          <ThemedView style={styles.statsRow}>
-            <Text style={styles.statLabel}>총 기록 일수</Text>
-            <Text style={styles.statValue}>{totalDays}일</Text>
-          </ThemedView>
-          <ThemedView style={styles.statsRow}>
-            <Text style={styles.statLabel}>총 기록 횟수</Text>
-            <Text style={styles.statValue}>{totalRecords}회</Text>
+          <ThemedView style={styles.typeStatsContainer}>
+            <ThemedView style={styles.typeStatsColumn}>
+              <Text style={[styles.typeStatsTitle, { color: "#ff6b6b" }]}>
+                🔴 금욕 기록
+              </Text>
+              <ThemedView style={styles.statsRow}>
+                <Text style={styles.statLabel}>기록 일수</Text>
+                <Text style={styles.statValue}>{addictionDays}일</Text>
+              </ThemedView>
+              <ThemedView style={styles.statsRow}>
+                <Text style={styles.statLabel}>기록 횟수</Text>
+                <Text style={styles.statValue}>{addictionRecords}회</Text>
+              </ThemedView>
+            </ThemedView>
+
+            <ThemedView style={styles.typeStatsColumn}>
+              <Text style={[styles.typeStatsTitle, { color: "#ff8c00" }]}>
+                🟠 금주 기록
+              </Text>
+              <ThemedView style={styles.statsRow}>
+                <Text style={styles.statLabel}>기록 일수</Text>
+                <Text style={styles.statValue}>{alcoholDays}일</Text>
+              </ThemedView>
+              <ThemedView style={styles.statsRow}>
+                <Text style={styles.statLabel}>기록 횟수</Text>
+                <Text style={styles.statValue}>{alcoholRecords}회</Text>
+              </ThemedView>
+            </ThemedView>
           </ThemedView>
         </Card>
 
@@ -172,7 +179,16 @@ const RecordsScreen = memo(() => {
         </Card>
       </>
     ),
-    [totalDays, totalRecords, onResetPress, styles]
+    [
+      totalDays,
+      totalRecords,
+      addictionDays,
+      addictionRecords,
+      alcoholDays,
+      alcoholRecords,
+      onResetPress,
+      styles,
+    ]
   );
 
   return (

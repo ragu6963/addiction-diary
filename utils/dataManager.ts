@@ -450,6 +450,135 @@ export const clearAllAlcoholRecords = async (): Promise<void> => {
 };
 
 /**
+ * 금욕과 금주 기록을 합쳐서 반환하는 함수
+ */
+export interface CombinedRecordItem {
+  id: string;
+  date: string;
+  formattedDate: string;
+  recordTime: string;
+  timestamp: string;
+  type: "addiction" | "alcohol"; // 기록 타입 구분
+  count: number; // 해당 날짜의 총 기록 수
+  recordNumber: number; // 해당 날짜 내에서의 순번
+}
+
+export const loadCombinedRecords = async (): Promise<{
+  records: CombinedRecordItem[];
+  totalRecords: number;
+  totalDays: number;
+  addictionRecords: number;
+  alcoholRecords: number;
+  addictionDays: number;
+  alcoholDays: number;
+}> => {
+  try {
+    const [addictionData, alcoholData] = await Promise.all([
+      loadRecordData(),
+      loadAlcoholRecordData(),
+    ]);
+
+    const allRecords: CombinedRecordItem[] = [];
+    const uniqueDates = new Set<string>();
+    const addictionDates = new Set<string>();
+    const alcoholDates = new Set<string>();
+    let addictionRecordCount = 0;
+    let alcoholRecordCount = 0;
+
+    // 금욕 기록 처리
+    Object.keys(addictionData).forEach((date) => {
+      uniqueDates.add(date);
+      addictionDates.add(date);
+      const dayRecords = addictionData[date].records || [];
+      addictionRecordCount += dayRecords.length;
+
+      dayRecords.forEach((record, index) => {
+        allRecords.push({
+          id: record.id,
+          date,
+          formattedDate: formatDate(date),
+          recordTime: record.time,
+          timestamp: record.timestamp,
+          type: "addiction",
+          count: dayRecords.length,
+          recordNumber: index + 1,
+        });
+      });
+    });
+
+    // 금주 기록 처리
+    Object.keys(alcoholData).forEach((date) => {
+      uniqueDates.add(date);
+      alcoholDates.add(date);
+      const dayRecords = alcoholData[date].records || [];
+      alcoholRecordCount += dayRecords.length;
+
+      dayRecords.forEach((record, index) => {
+        allRecords.push({
+          id: record.id,
+          date,
+          formattedDate: formatDate(date),
+          recordTime: record.time,
+          timestamp: record.timestamp,
+          type: "alcohol",
+          count: dayRecords.length,
+          recordNumber: index + 1,
+        });
+      });
+    });
+
+    // 타임스탬프 기준으로 정렬 (최신순)
+    allRecords.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    return {
+      records: allRecords,
+      totalRecords: allRecords.length,
+      totalDays: uniqueDates.size,
+      addictionRecords: addictionRecordCount,
+      alcoholRecords: alcoholRecordCount,
+      addictionDays: addictionDates.size,
+      alcoholDays: alcoholDates.size,
+    };
+  } catch (error) {
+    console.error("통합 기록 로드 실패:", error);
+    return {
+      records: [],
+      totalRecords: 0,
+      totalDays: 0,
+      addictionRecords: 0,
+      alcoholRecords: 0,
+      addictionDays: 0,
+      alcoholDays: 0,
+    };
+  }
+};
+
+/**
+ * 통합 기록 삭제 함수
+ */
+export const deleteCombinedRecord = async (
+  recordId: string,
+  date: string,
+  type: "addiction" | "alcohol"
+): Promise<void> => {
+  if (type === "addiction") {
+    await deleteRecord(date, recordId);
+  } else {
+    await deleteAlcoholRecord(date, recordId);
+  }
+};
+
+/**
+ * 모든 기록 삭제 (금욕 + 금주)
+ */
+export const clearAllCombinedRecords = async (): Promise<void> => {
+  await Promise.all([clearAllRecords(), clearAllAlcoholRecords()]);
+};
+
+/**
  * 캐시 무효화 함수
  */
 export const invalidateCache = (): void => {

@@ -20,16 +20,16 @@ const AlcoholCalendarScreen = memo(() => {
   const [streakDays, setStreakDays] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // 달력 테마 메모이제이션 (금주용 녹색 테마)
+  // 달력 테마 메모이제이션 (금주용 주황색 테마)
   const calendarTheme = useMemo(() => {
     const baseTheme = createCalendarTheme(theme);
     return {
       ...baseTheme,
       // 금주 달력용 색상 커스터마이징
-      todayTextColor: "#28a745",
-      selectedDayBackgroundColor: "#28a745",
+      todayTextColor: "#ff8c00",
+      selectedDayBackgroundColor: "#ff8c00",
       selectedDayTextColor: "#ffffff",
-      arrowColor: "#28a745",
+      arrowColor: "#ff8c00",
     };
   }, [theme]);
 
@@ -41,7 +41,7 @@ const AlcoholCalendarScreen = memo(() => {
       Object.keys(recordData).forEach((date) => {
         marked[date] = {
           marked: true,
-          dotColor: "#28a745", // 녹색 점으로 표시
+          dotColor: "#ff8c00", // 주황색 점으로 표시
           count: recordData[date].count,
           lastRecordTime: recordData[date].lastRecordTime,
         };

@@ -11,10 +11,24 @@ export const createRecordsStyles = (theme: Theme) => {
     recordInfo: {
       flex: 1,
     },
+    recordHeader: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "center" as const,
+      marginBottom: theme.spacing[1],
+    },
+    recordType: {
+      fontSize: theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.bold,
+    },
+    recordCount: {
+      fontSize: theme.typography.fontSize.xs,
+      color: theme.colors.text,
+      opacity: 0.7,
+    },
     recordDate: {
       fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.semibold,
-      marginBottom: theme.spacing[1],
       color: theme.colors.text,
     },
     recordActions: {
@@ -33,6 +47,22 @@ export const createRecordsStyles = (theme: Theme) => {
       flexDirection: "row" as const,
       justifyContent: "space-between" as const,
       alignItems: "center" as const,
+    },
+    // 타입별 통계 스타일
+    typeStatsContainer: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      gap: theme.spacing[4],
+    },
+    typeStatsColumn: {
+      flex: 1,
+      padding: theme.spacing[3],
+    },
+    typeStatsTitle: {
+      fontSize: theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.bold,
+      marginBottom: theme.spacing[2],
+      textAlign: "center" as const,
     },
   };
 };
