@@ -9,11 +9,13 @@ export {
 } from "./calendar-base.styles";
 
 // 화면별 스타일 팩토리들
+export { createAddictionRecordsStyles } from "./addiction-records.styles";
 export { createAlcoholCalendarStyles } from "./alcohol-calendar.styles";
 export {
   createAlcoholRecordModalStyles,
   staticAlcoholRecordModalStyles,
 } from "./alcohol-record-modal.styles";
+export { createAlcoholRecordsStyles } from "./alcohol-records.styles";
 export { createCalendarStyles } from "./calendar.styles";
 export {
   createCommonStyles,

@@ -6,9 +6,10 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import { Animated, Dimensions, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AddictionRecordsScreen from "./addiction-records";
 import AlcoholCalendarScreen from "./alcohol-calendar";
+import AlcoholRecordsScreen from "./alcohol-records";
 import CalendarScreen from "./calendar";
-import RecordsScreen from "./records";
 import StatisticsScreen from "./statistics";
 
 const { width } = Dimensions.get("window");
@@ -44,8 +45,10 @@ export default function MainScreen() {
         return <AlcoholCalendarScreen />;
       case "statistics":
         return <StatisticsScreen />;
-      case "records":
-        return <RecordsScreen />;
+      case "addiction-records":
+        return <AddictionRecordsScreen />;
+      case "alcohol-records":
+        return <AlcoholRecordsScreen />;
       default:
         return <CalendarScreen />;
     }
@@ -70,8 +73,10 @@ export default function MainScreen() {
             ? "금주 달력"
             : currentScreen === "statistics"
             ? "통계"
-            : currentScreen === "records"
-            ? "기록"
+            : currentScreen === "addiction-records"
+            ? "금욕 기록"
+            : currentScreen === "alcohol-records"
+            ? "금주 기록"
             : "금욕 달력"}
         </ThemedText>
 
@@ -120,9 +125,20 @@ export default function MainScreen() {
 
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigateToScreen("records")}
+          onPress={() => navigateToScreen("addiction-records")}
         >
-          <ThemedText style={staticMainStyles.menuItemText}>기록</ThemedText>
+          <ThemedText style={staticMainStyles.menuItemText}>
+            금욕 기록
+          </ThemedText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigateToScreen("alcohol-records")}
+        >
+          <ThemedText style={staticMainStyles.menuItemText}>
+            금주 기록
+          </ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity

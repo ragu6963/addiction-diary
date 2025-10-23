@@ -781,6 +781,50 @@ export const getAlcoholStatistics = async () => {
 };
 
 /**
+ * 금욕 기록 삭제 함수
+ */
+export const deleteAddictionRecord = async (
+  recordId: string,
+  date: string
+): Promise<void> => {
+  try {
+    const data = await loadRecordData();
+    if (data[date]) {
+      data[date].records = data[date].records.filter(
+        (record: any) => record.id !== recordId
+      );
+
+      if (data[date].records.length === 0) {
+        delete data[date];
+      } else {
+        // 마지막 기록 시간 업데이트
+        const lastRecord = data[date].records[data[date].records.length - 1];
+        data[date].lastRecordTime = lastRecord.time;
+      }
+
+      await saveRecordData(data);
+      invalidateCache();
+    }
+  } catch (error) {
+    console.error("금욕 기록 삭제 실패:", error);
+    throw error;
+  }
+};
+
+/**
+ * 모든 금욕 기록 삭제 함수
+ */
+export const clearAllAddictionRecords = async (): Promise<void> => {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    invalidateCache();
+  } catch (error) {
+    console.error("금욕 기록 초기화 실패:", error);
+    throw error;
+  }
+};
+
+/**
  * 캐시 무효화 함수
  */
 export const invalidateCache = (): void => {
