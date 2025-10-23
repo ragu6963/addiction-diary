@@ -41,7 +41,6 @@ export const createRecordsStyles = (theme: Theme) => {
     listItem: {
       ...mixins.flexRowBetween,
       backgroundColor: "transparent",
-      borderRadius: theme.borderRadius.md,
       padding: theme.spacing[4],
       marginBottom: theme.spacing[2],
     },
@@ -58,6 +57,10 @@ export const createRecordsStyles = (theme: Theme) => {
       ...mixins.titleVariants.small,
       marginBottom: theme.spacing[2],
       textAlign: "center" as const,
+    },
+    // 삭제 버튼 스타일
+    deleteAllButton: {
+      ...mixins.buttonVariants.secondary,
     },
   };
 };

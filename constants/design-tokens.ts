@@ -151,18 +151,18 @@ export const typography = {
   },
 } as const;
 
-// 보더 반지름 시스템
-export const borderRadius = {
-  none: 0,
-  sm: 4,
-  base: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  "2xl": 24,
-  "3xl": 32,
-  full: 9999,
-} as const;
+// 보더 반지름 시스템 (사용하지 않음)
+// export const borderRadius = {
+//   none: 0,
+//   sm: 4,
+//   base: 8,
+//   md: 12,
+//   lg: 16,
+//   xl: 20,
+//   "2xl": 24,
+//   "3xl": 32,
+//   full: 9999,
+// } as const;
 
 // 그림자 시스템
 export const shadows = {
@@ -250,7 +250,6 @@ export const lightTheme = {
   appColors,
   spacing,
   typography,
-  borderRadius,
   shadows,
 } as const;
 
@@ -279,7 +278,6 @@ export const darkTheme = {
   appColors,
   spacing,
   typography,
-  borderRadius,
   shadows,
 } as const;
 

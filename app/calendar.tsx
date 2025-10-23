@@ -48,7 +48,7 @@ const CalendarScreen = memo(() => {
     } catch (error) {
       console.error("데이터 로드 실패:", error);
     }
-  }, []);
+  }, [theme.appColors.addiction.primary]);
 
   // 저장된 데이터 로드
   useEffect(() => {
@@ -149,14 +149,22 @@ const CalendarScreen = memo(() => {
         <ThemedView
           style={[styles.calendarHeader, { backgroundColor: "transparent" }]}
         >
-          <Button title="‹" onPress={() => navigateMonth("prev")} />
+          <Button
+            title="‹"
+            onPress={() => navigateMonth("prev")}
+            buttonStyle={styles.navButton}
+          />
           <TouchableOpacity onPress={goToToday}>
             <Text style={styles.monthText}>
               {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
             </Text>
           </TouchableOpacity>
 
-          <Button title="›" onPress={() => navigateMonth("next")} />
+          <Button
+            title="›"
+            onPress={() => navigateMonth("next")}
+            buttonStyle={styles.navButton}
+          />
         </ThemedView>
 
         {/* 달력 */}
@@ -185,7 +193,11 @@ const CalendarScreen = memo(() => {
 
       {/* 기록 버튼 */}
       <Card containerStyle={styles.cardContainer}>
-        <Button title="기록하기" onPress={onRecordPress} />
+        <Button
+          title="기록하기"
+          onPress={onRecordPress}
+          buttonStyle={styles.recordButton}
+        />
       </Card>
     </ThemedView>
   );

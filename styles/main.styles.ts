@@ -24,15 +24,12 @@ export const createMainStyles = (theme: Theme) => ({
   },
   menuPanel: {
     backgroundColor: theme.colors.surface,
-    borderTopRightRadius: theme.borderRadius.xl,
-    borderBottomRightRadius: theme.borderRadius.xl,
     paddingTop: 44,
     paddingHorizontal: theme.spacing[4],
     ...theme.shadows.lg,
   },
   menuItem: {
     backgroundColor: "transparent",
-    borderRadius: theme.borderRadius.md,
     marginVertical: theme.spacing[1],
     marginHorizontal: theme.spacing[2],
     paddingVertical: theme.spacing[4],

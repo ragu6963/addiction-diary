@@ -188,6 +188,7 @@ const RecordsScreen = memo(() => {
             containerStyle={{ marginBottom: 16 }}
             title="모든 기록 삭제"
             onPress={onResetPress}
+            buttonStyle={styles.deleteAllButton}
           />
         </Card>
       </>

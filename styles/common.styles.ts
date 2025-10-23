@@ -29,7 +29,6 @@ export const createMixins = (theme: Theme) => ({
     flex: 1,
     padding: theme.spacing[3],
     backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.md,
   },
 
   // 제목 스타일 변형
@@ -55,15 +54,17 @@ export const createMixins = (theme: Theme) => ({
   buttonVariants: {
     primary: {
       backgroundColor: theme.colors.primary,
-      borderRadius: theme.borderRadius.md,
       paddingVertical: theme.spacing[3],
       paddingHorizontal: theme.spacing[4],
+      width: "50%",
+      alignSelf: "center" as const,
     },
     secondary: {
       backgroundColor: theme.colors.secondary,
-      borderRadius: theme.borderRadius.md,
       paddingVertical: theme.spacing[3],
       paddingHorizontal: theme.spacing[4],
+      width: "50%",
+      alignSelf: "center" as const,
     },
   },
 });

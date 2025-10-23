@@ -63,16 +63,22 @@ export const createCalendarVariantStyles = (
 
   // 각 달력별 추가 스타일
   const mixins = createMixins(theme);
-  const variantStyles =
-    variant === "alcohol"
-      ? {
-          // 금주 달력 전용 버튼 스타일
-          recordButton: {
-            ...mixins.buttonVariants.primary,
-            backgroundColor: accentColor,
-          },
-        }
-      : {};
+  const variantStyles = {
+    // 공통 기록 버튼 스타일
+    recordButton: {
+      ...mixins.buttonVariants.primary,
+      backgroundColor: accentColor,
+    },
+    // 달력 네비게이션 버튼 스타일
+    navButton: {
+      width: 40,
+      height: 40,
+      alignSelf: "center" as const,
+      backgroundColor: "transparent",
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[2],
+    },
+  };
 
   return {
     ...baseStyles,
