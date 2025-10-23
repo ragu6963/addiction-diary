@@ -4,6 +4,8 @@ import { createStatisticsStyles } from "@/styles/statistics.styles";
 import {
   calculateLongestStreak,
   calculateStreakDays,
+  loadAlcoholRecordData,
+  loadCombinedRecords,
   loadRecordData,
 } from "@/utils/dataManager";
 import { Card, Text } from "@rneui/themed";
@@ -14,57 +16,43 @@ const StatisticsScreen = memo(() => {
   const theme = useTheme();
   const styles = createStatisticsStyles(theme);
 
-  const [totalRecordedDays, setTotalRecordedDays] = useState(0);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [currentStreak, setCurrentStreak] = useState(0);
-  const [longestStreak, setLongestStreak] = useState(0);
-  const [averagePerDay, setAveragePerDay] = useState(0);
-  const [thisMonthRecords, setThisMonthRecords] = useState(0);
-  const [thisWeekRecords, setThisWeekRecords] = useState(0);
+  // 금욕 통계
+  const [addictionTotalDays, setAddictionTotalDays] = useState(0);
+  const [addictionTotalRecords, setAddictionTotalRecords] = useState(0);
+  const [addictionCurrentStreak, setAddictionCurrentStreak] = useState(0);
+  const [addictionLongestStreak, setAddictionLongestStreak] = useState(0);
+  const [addictionThisWeek, setAddictionThisWeek] = useState(0);
+  const [addictionThisMonth, setAddictionThisMonth] = useState(0);
+
+  // 금주 통계
+  const [alcoholTotalDays, setAlcoholTotalDays] = useState(0);
+  const [alcoholTotalRecords, setAlcoholTotalRecords] = useState(0);
+  const [alcoholCurrentStreak, setAlcoholCurrentStreak] = useState(0);
+  const [alcoholLongestStreak, setAlcoholLongestStreak] = useState(0);
+  const [alcoholThisWeek, setAlcoholThisWeek] = useState(0);
+  const [alcoholThisMonth, setAlcoholThisMonth] = useState(0);
+
+  // 전체 통계
+  const [totalCombinedDays, setTotalCombinedDays] = useState(0);
+  const [totalCombinedRecords, setTotalCombinedRecords] = useState(0);
 
   const loadStatistics = useCallback(async () => {
     try {
-      const recordData = await loadRecordData();
-      const dates = Object.keys(recordData);
+      const [addictionData, alcoholData, combinedData] = await Promise.all([
+        loadRecordData(),
+        loadAlcoholRecordData(),
+        loadCombinedRecords(),
+      ]);
 
-      if (dates.length === 0) {
-        // 모든 상태를 0으로 초기화
-        setTotalRecordedDays(0);
-        setTotalRecords(0);
-        setCurrentStreak(0);
-        setLongestStreak(0);
-        setAveragePerDay(0);
-        setThisMonthRecords(0);
-        setThisWeekRecords(0);
-        return;
-      }
-
-      // 기본 통계
-      const totalRecordsCount = Object.values(recordData).reduce(
-        (sum, data) => sum + data.count,
-        0
-      );
-
-      setTotalRecordedDays(dates.length);
-      setTotalRecords(totalRecordsCount);
-      setCurrentStreak(calculateStreakDays(dates));
-      setLongestStreak(calculateLongestStreak(dates));
-      setAveragePerDay(totalRecordsCount / dates.length);
-
-      // 이번 달 통계
       const now = new Date();
       const thisMonth = `${now.getFullYear()}-${(now.getMonth() + 1)
         .toString()
         .padStart(2, "0")}`;
-      const thisMonthCount = Object.keys(recordData)
-        .filter((date) => date.startsWith(thisMonth))
-        .reduce((sum, date) => sum + recordData[date].count, 0);
-      setThisMonthRecords(thisMonthCount);
 
-      // 이번 주 통계
+      // 이번 주 범위 계산
       const startOfWeek = new Date(now);
       const day = startOfWeek.getDay();
-      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // 월요일부터 시작
+      const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
       startOfWeek.setDate(diff);
       startOfWeek.setHours(0, 0, 0, 0);
 
@@ -72,13 +60,55 @@ const StatisticsScreen = memo(() => {
       endOfWeek.setDate(startOfWeek.getDate() + 6);
       endOfWeek.setHours(23, 59, 59, 999);
 
-      const thisWeekCount = Object.keys(recordData)
+      // 금욕 통계 계산
+      const addictionDates = Object.keys(addictionData);
+      const addictionTotalCount = Object.values(addictionData).reduce(
+        (sum, data) => sum + data.count,
+        0
+      );
+      const addictionThisMonthCount = addictionDates
+        .filter((date) => date.startsWith(thisMonth))
+        .reduce((sum, date) => sum + addictionData[date].count, 0);
+      const addictionThisWeekCount = addictionDates
         .filter((dateStr) => {
           const date = new Date(dateStr);
           return date >= startOfWeek && date <= endOfWeek;
         })
-        .reduce((sum, date) => sum + recordData[date].count, 0);
-      setThisWeekRecords(thisWeekCount);
+        .reduce((sum, date) => sum + addictionData[date].count, 0);
+
+      setAddictionTotalDays(addictionDates.length);
+      setAddictionTotalRecords(addictionTotalCount);
+      setAddictionCurrentStreak(calculateStreakDays(addictionDates));
+      setAddictionLongestStreak(calculateLongestStreak(addictionDates));
+      setAddictionThisWeek(addictionThisWeekCount);
+      setAddictionThisMonth(addictionThisMonthCount);
+
+      // 금주 통계 계산
+      const alcoholDates = Object.keys(alcoholData);
+      const alcoholTotalCount = Object.values(alcoholData).reduce(
+        (sum, data) => sum + data.count,
+        0
+      );
+      const alcoholThisMonthCount = alcoholDates
+        .filter((date) => date.startsWith(thisMonth))
+        .reduce((sum, date) => sum + alcoholData[date].count, 0);
+      const alcoholThisWeekCount = alcoholDates
+        .filter((dateStr) => {
+          const date = new Date(dateStr);
+          return date >= startOfWeek && date <= endOfWeek;
+        })
+        .reduce((sum, date) => sum + alcoholData[date].count, 0);
+
+      setAlcoholTotalDays(alcoholDates.length);
+      setAlcoholTotalRecords(alcoholTotalCount);
+      setAlcoholCurrentStreak(calculateStreakDays(alcoholDates));
+      setAlcoholLongestStreak(calculateLongestStreak(alcoholDates));
+      setAlcoholThisWeek(alcoholThisWeekCount);
+      setAlcoholThisMonth(alcoholThisMonthCount);
+
+      // 전체 통합 통계
+      setTotalCombinedDays(combinedData.totalDays);
+      setTotalCombinedRecords(combinedData.totalRecords);
     } catch (error) {
       console.error("통계 로드 실패:", error);
     }
@@ -110,40 +140,6 @@ const StatisticsScreen = memo(() => {
   const statisticsData = useMemo(
     () => [
       {
-        id: "streak",
-        component: (
-          <Card containerStyle={styles.cardContainer}>
-            <Text h4 style={styles.sectionTitle}>
-              연속 금욕 현황
-            </Text>
-            <ThemedView style={styles.streakDisplay}>
-              <Text
-                style={[
-                  styles.streakNumber,
-                  { color: getStreakColor(currentStreak) },
-                ]}
-              >
-                {currentStreak}일
-              </Text>
-              <Text style={styles.streakMessage}>
-                {getStreakMessage(currentStreak)}
-              </Text>
-            </ThemedView>
-            <ThemedView style={styles.statsRow}>
-              <Text style={styles.statLabel}>최장 연속 금욕</Text>
-              <Text
-                style={[
-                  styles.statValue,
-                  { color: getStreakColor(longestStreak) },
-                ]}
-              >
-                {longestStreak}일
-              </Text>
-            </ThemedView>
-          </Card>
-        ),
-      },
-      {
         id: "overall",
         component: (
           <Card containerStyle={styles.cardContainer}>
@@ -152,20 +148,130 @@ const StatisticsScreen = memo(() => {
             </Text>
             <ThemedView style={styles.statsRow}>
               <Text style={styles.statLabel}>총 기록 일수</Text>
-              <Text style={styles.statValue}>{totalRecordedDays}일</Text>
+              <Text style={styles.statValue}>{totalCombinedDays}일</Text>
             </ThemedView>
             <ThemedView style={styles.statsRow}>
               <Text style={styles.statLabel}>총 기록 횟수</Text>
-              <Text style={styles.statValue}>{totalRecords}회</Text>
+              <Text style={styles.statValue}>{totalCombinedRecords}회</Text>
             </ThemedView>
-            {totalRecordedDays > 0 && (
-              <ThemedView style={styles.statsRow}>
-                <Text style={styles.statLabel}>일평균 기록</Text>
-                <Text style={styles.statValue}>
-                  {averagePerDay.toFixed(1)}회
+          </Card>
+        ),
+      },
+      {
+        id: "streak-comparison",
+        component: (
+          <Card containerStyle={styles.cardContainer}>
+            <Text h4 style={styles.sectionTitle}>
+              연속 현황
+            </Text>
+            <ThemedView style={styles.streakComparisonContainer}>
+              <ThemedView style={styles.streakComparisonColumn}>
+                <Text
+                  h4
+                  style={[styles.streakComparisonTitle, { color: "#ff6b6b" }]}
+                >
+                  🔴 금욕
                 </Text>
+                <ThemedView style={styles.streakDisplay}>
+                  <Text
+                    style={[
+                      styles.streakNumber,
+                      { color: getStreakColor(addictionCurrentStreak) },
+                    ]}
+                  >
+                    {addictionCurrentStreak}일
+                  </Text>
+                  <Text style={styles.streakMessage}>
+                    {getStreakMessage(addictionCurrentStreak)}
+                  </Text>
+                </ThemedView>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>최장 연속</Text>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      { color: getStreakColor(addictionLongestStreak) },
+                    ]}
+                  >
+                    {addictionLongestStreak}일
+                  </Text>
+                </ThemedView>
               </ThemedView>
-            )}
+
+              <ThemedView style={styles.streakComparisonColumn}>
+                <Text
+                  h4
+                  style={[styles.streakComparisonTitle, { color: "#ff8c00" }]}
+                >
+                  🟠 금주
+                </Text>
+                <ThemedView style={styles.streakDisplay}>
+                  <Text
+                    style={[
+                      styles.streakNumber,
+                      { color: getStreakColor(alcoholCurrentStreak) },
+                    ]}
+                  >
+                    {alcoholCurrentStreak}일
+                  </Text>
+                  <Text style={styles.streakMessage}>
+                    {getStreakMessage(alcoholCurrentStreak)}
+                  </Text>
+                </ThemedView>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>최장 연속</Text>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      { color: getStreakColor(alcoholLongestStreak) },
+                    ]}
+                  >
+                    {alcoholLongestStreak}일
+                  </Text>
+                </ThemedView>
+              </ThemedView>
+            </ThemedView>
+          </Card>
+        ),
+      },
+      {
+        id: "type-comparison",
+        component: (
+          <Card containerStyle={styles.cardContainer}>
+            <Text h4 style={styles.sectionTitle}>
+              타입별 비교
+            </Text>
+            <ThemedView style={styles.comparisonContainer}>
+              <ThemedView style={styles.comparisonColumn}>
+                <Text style={[styles.comparisonTitle, { color: "#ff6b6b" }]}>
+                  🔴 금욕 기록
+                </Text>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>기록 일수</Text>
+                  <Text style={styles.statValue}>{addictionTotalDays}일</Text>
+                </ThemedView>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>기록 횟수</Text>
+                  <Text style={styles.statValue}>
+                    {addictionTotalRecords}회
+                  </Text>
+                </ThemedView>
+              </ThemedView>
+
+              <ThemedView style={styles.comparisonColumn}>
+                <Text style={[styles.comparisonTitle, { color: "#ff8c00" }]}>
+                  🟠 금주 기록
+                </Text>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>기록 일수</Text>
+                  <Text style={styles.statValue}>{alcoholTotalDays}일</Text>
+                </ThemedView>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>기록 횟수</Text>
+                  <Text style={styles.statValue}>{alcoholTotalRecords}회</Text>
+                </ThemedView>
+              </ThemedView>
+            </ThemedView>
           </Card>
         ),
       },
@@ -176,75 +282,87 @@ const StatisticsScreen = memo(() => {
             <Text h4 style={styles.sectionTitle}>
               최근 통계
             </Text>
-            <ThemedView style={styles.statsRow}>
-              <Text style={styles.statLabel}>이번 주 기록</Text>
-              <Text
-                style={[
-                  styles.statValue,
-                  {
-                    color:
-                      thisWeekRecords === 0
-                        ? theme.colors.success
-                        : theme.colors.secondary,
-                  },
-                ]}
-              >
-                {thisWeekRecords}회
-              </Text>
-            </ThemedView>
-            <ThemedView style={styles.statsRow}>
-              <Text style={styles.statLabel}>이번 달 기록</Text>
-              <Text
-                style={[
-                  styles.statValue,
-                  {
-                    color:
-                      thisMonthRecords === 0
-                        ? theme.colors.success
-                        : theme.colors.secondary,
-                  },
-                ]}
-              >
-                {thisMonthRecords}회
-              </Text>
+            <ThemedView style={styles.recentStatsContainer}>
+              <ThemedView style={styles.recentStatsColumn}>
+                <Text style={[styles.recentStatsTitle, { color: "#ff6b6b" }]}>
+                  🔴 금욕 기록
+                </Text>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>이번 주</Text>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      {
+                        color:
+                          addictionThisWeek === 0
+                            ? theme.colors.success
+                            : theme.colors.secondary,
+                      },
+                    ]}
+                  >
+                    {addictionThisWeek}회
+                  </Text>
+                </ThemedView>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>이번 달</Text>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      {
+                        color:
+                          addictionThisMonth === 0
+                            ? theme.colors.success
+                            : theme.colors.secondary,
+                      },
+                    ]}
+                  >
+                    {addictionThisMonth}회
+                  </Text>
+                </ThemedView>
+              </ThemedView>
+
+              <ThemedView style={styles.recentStatsColumn}>
+                <Text style={[styles.recentStatsTitle, { color: "#ff8c00" }]}>
+                  🟠 금주 기록
+                </Text>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>이번 주</Text>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      {
+                        color:
+                          alcoholThisWeek === 0
+                            ? theme.colors.success
+                            : theme.colors.secondary,
+                      },
+                    ]}
+                  >
+                    {alcoholThisWeek}회
+                  </Text>
+                </ThemedView>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>이번 달</Text>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      {
+                        color:
+                          alcoholThisMonth === 0
+                            ? theme.colors.success
+                            : theme.colors.secondary,
+                      },
+                    ]}
+                  >
+                    {alcoholThisMonth}회
+                  </Text>
+                </ThemedView>
+              </ThemedView>
             </ThemedView>
           </Card>
         ),
       },
-      {
-        id: "goal",
-        component: (
-          <Card containerStyle={styles.cardContainer}>
-            <Text h4 style={styles.sectionTitle}>
-              목표 달성도
-            </Text>
-            <ThemedView style={styles.goalSection}>
-              <Text style={styles.goalTitle}>다음 목표까지</Text>
-              {currentStreak < 1 && (
-                <Text style={styles.goalText}>
-                  1일 연속 금욕까지 {1 - currentStreak}일 남았어요!
-                </Text>
-              )}
-              {currentStreak >= 1 && currentStreak < 3 && (
-                <Text style={styles.goalText}>
-                  3일 연속 금욕까지 {3 - currentStreak}일 남았어요!
-                </Text>
-              )}
-              {currentStreak >= 3 && currentStreak < 7 && (
-                <Text style={styles.goalText}>
-                  7일 연속 금욕까지 {7 - currentStreak}일 남았어요!
-                </Text>
-              )}
-              {currentStreak >= 7 && (
-                <Text style={styles.goalText}>
-                  놀라운 성취입니다! 계속 유지해보세요! 🌟
-                </Text>
-              )}
-            </ThemedView>
-          </Card>
-        ),
-      },
-      ...(totalRecordedDays === 0
+      ...(totalCombinedRecords === 0
         ? [
             {
               id: "empty",
@@ -261,13 +379,20 @@ const StatisticsScreen = memo(() => {
         : []),
     ],
     [
-      currentStreak,
-      longestStreak,
-      totalRecordedDays,
-      totalRecords,
-      averagePerDay,
-      thisWeekRecords,
-      thisMonthRecords,
+      addictionCurrentStreak,
+      addictionLongestStreak,
+      addictionTotalDays,
+      addictionTotalRecords,
+      addictionThisWeek,
+      addictionThisMonth,
+      alcoholCurrentStreak,
+      alcoholLongestStreak,
+      alcoholTotalDays,
+      alcoholTotalRecords,
+      alcoholThisWeek,
+      alcoholThisMonth,
+      totalCombinedDays,
+      totalCombinedRecords,
       theme.colors,
       styles,
       getStreakColor,
