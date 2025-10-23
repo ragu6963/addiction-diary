@@ -197,34 +197,37 @@ export const clearAllRecords = async (): Promise<void> => {
 };
 
 /**
- * 연속 금욕 일수를 계산합니다 (최적화된 버전)
+ * 연속 금욕/금주 일수를 계산합니다
+ * 기록이 있는 날 = 실패한 날이므로, 마지막 기록 이후 경과된 일수를 계산
  */
 export const calculateStreakDays = (dates: string[]): number => {
-  if (dates.length === 0) return 0;
+  if (dates.length === 0) {
+    // 기록이 전혀 없으면 앱 설치 후 계속 성공한 것으로 간주
+    // 실제로는 사용자가 언제부터 시작했는지 알 수 없으므로 0으로 반환
+    return 0;
+  }
 
   // 날짜를 정렬하고 중복 제거
   const sortedDates = [...new Set(dates)].sort();
-  let streak = 0;
+
+  // 가장 최근 기록(실패) 날짜
+  const lastFailureDate = new Date(sortedDates[sortedDates.length - 1]);
+  lastFailureDate.setHours(0, 0, 0, 0);
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // 오늘부터 역순으로 계산
-  for (let i = 0; i < sortedDates.length; i++) {
-    const currentDate = new Date(sortedDates[sortedDates.length - 1 - i]);
-    currentDate.setHours(0, 0, 0, 0);
+  // 마지막 실패 이후 경과된 일수 계산
+  const diffTime = today.getTime() - lastFailureDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    const expectedDate = new Date(today);
-    expectedDate.setDate(today.getDate() - i);
-    expectedDate.setHours(0, 0, 0, 0);
-
-    if (currentDate.getTime() === expectedDate.getTime()) {
-      streak++;
-    } else {
-      break;
-    }
+  // 오늘 기록이 있으면 연속일은 0
+  if (diffDays === 0) {
+    return 0;
   }
 
-  return streak;
+  // 마지막 기록 이후 경과된 일수가 연속 성공 일수
+  return diffDays;
 };
 
 /**
