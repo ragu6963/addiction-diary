@@ -203,6 +203,27 @@ export const shadows = {
   },
 } as const;
 
+// 앱 전용 색상 시스템
+export const appColors = {
+  // 금욕 관련 색상
+  addiction: {
+    primary: "#ff6b6b",
+    light: "#ff9999",
+    dark: "#e55a5a",
+  },
+  // 금주 관련 색상
+  alcohol: {
+    primary: "#ff8c00",
+    light: "#ffb347",
+    dark: "#e67e00",
+  },
+  // 공통 색상
+  common: {
+    white: "#ffffff",
+    transparent: "transparent",
+  },
+} as const;
+
 // 다크/라이트 테마 정의
 export const lightTheme = {
   colors: {
@@ -225,6 +246,8 @@ export const lightTheme = {
     // neutral 색상도 포함
     neutral: colors.neutral,
   },
+  // 앱 전용 색상 포함
+  appColors,
   spacing,
   typography,
   borderRadius,
@@ -252,6 +275,8 @@ export const darkTheme = {
     // neutral 색상도 포함
     neutral: colors.neutral,
   },
+  // 앱 전용 색상 포함
+  appColors,
   spacing,
   typography,
   borderRadius,

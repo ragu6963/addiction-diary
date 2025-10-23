@@ -1,6 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { useTheme } from "@/hooks/use-styles";
+import { useStyles, useTheme } from "@/hooks/use-styles";
 import { createMainStyles, staticMainStyles } from "@/styles/main.styles";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
@@ -15,7 +15,7 @@ const { width } = Dimensions.get("window");
 
 export default function MainScreen() {
   const theme = useTheme();
-  const styles = createMainStyles(theme);
+  const styles = useStyles(createMainStyles);
 
   const [currentScreen, setCurrentScreen] = useState("calendar");
   const [isMenuOpen, setIsMenuOpen] = useState(false);

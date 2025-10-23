@@ -1,5 +1,5 @@
 import { ThemedView } from "@/components/themed-view";
-import { createCalendarTheme, useTheme } from "@/hooks/use-styles";
+import { createCalendarTheme, useStyles, useTheme } from "@/hooks/use-styles";
 import { createCalendarStyles } from "@/styles/calendar.styles";
 import {
   addNewRecord,
@@ -14,7 +14,7 @@ import { Calendar } from "react-native-calendars";
 
 const CalendarScreen = memo(() => {
   const theme = useTheme();
-  const styles = createCalendarStyles(theme);
+  const styles = useStyles(createCalendarStyles);
 
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const [streakDays, setStreakDays] = useState(0);
@@ -33,7 +33,7 @@ const CalendarScreen = memo(() => {
         // 최대 5개까지 dot 표시 (너무 많으면 UI가 복잡해짐)
         const maxDots = Math.min(count, 5);
         const dots = Array.from({ length: maxDots }, () => ({
-          color: "#ff6b6b",
+          color: theme.appColors.addiction.primary,
         }));
 
         marked[date] = {

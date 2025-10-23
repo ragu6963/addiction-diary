@@ -1,37 +1,31 @@
 import { Theme } from "@/constants/design-tokens";
-import { createCommonStyles } from "./common.styles";
+import { createCommonStyles, createMixins } from "./common.styles";
 
 // 금주 달력 화면 전용 스타일 (금욕 달력과 구별되는 색상 사용)
 export const createAlcoholCalendarStyles = (theme: Theme) => {
   const commonStyles = createCommonStyles(theme);
+  const mixins = createMixins(theme);
 
   return {
     ...commonStyles,
-    // 금주 달력 전용 스타일 - 녹색 계열로 차별화
+    // 금주 달력 전용 스타일
     streakTitle: {
-      textAlign: "center" as const,
+      ...mixins.centerText,
+      ...mixins.titleVariants.medium,
       marginBottom: theme.spacing[2],
-      fontWeight: theme.typography.fontWeight.bold,
-      fontSize: theme.typography.fontSize["2xl"],
-      color: theme.colors.text,
     },
     streakDays: {
-      fontSize: theme.typography.fontSize["3xl"],
-      fontWeight: theme.typography.fontWeight.bold,
+      ...mixins.titleVariants.large,
       textAlign: "center" as const,
-      color: "#ff8c00", // 주황색 계열로 금욕 달력과 구별
+      color: theme.appColors.alcohol.primary,
       marginBottom: theme.spacing[2],
     },
     streakSubtext: {
-      textAlign: "center" as const,
-      fontSize: theme.typography.fontSize.base,
+      ...mixins.centerText,
       opacity: 0.8,
-      color: theme.colors.text,
     },
     calendarHeader: {
-      flexDirection: "row" as const,
-      justifyContent: "space-between" as const,
-      alignItems: "center" as const,
+      ...mixins.flexRowBetween,
       paddingVertical: theme.spacing[4],
       paddingHorizontal: theme.spacing[5],
     },
@@ -43,7 +37,10 @@ export const createAlcoholCalendarStyles = (theme: Theme) => {
     calendar: {},
     // 금주 전용 버튼 스타일
     recordButton: {
-      backgroundColor: "#ff8c00", // 주황색 계열
+      backgroundColor: theme.appColors.alcohol.primary,
+      borderRadius: theme.borderRadius.md,
+      paddingVertical: theme.spacing[3],
+      paddingHorizontal: theme.spacing[4],
     },
   };
 };

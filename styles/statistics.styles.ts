@@ -1,9 +1,10 @@
 import { Theme } from "@/constants/design-tokens";
-import { createCommonStyles } from "./common.styles";
+import { createCommonStyles, createMixins } from "./common.styles";
 
 // 통계 화면 전용 스타일
 export const createStatisticsStyles = (theme: Theme) => {
   const commonStyles = createCommonStyles(theme);
+  const mixins = createMixins(theme);
 
   return {
     ...commonStyles,
@@ -46,15 +47,11 @@ export const createStatisticsStyles = (theme: Theme) => {
     },
     // 비교 섹션 스타일
     comparisonContainer: {
-      flexDirection: "row" as const,
-      justifyContent: "space-between" as const,
+      ...mixins.flexRowBetween,
       gap: theme.spacing[4],
     },
     comparisonColumn: {
-      flex: 1,
-      padding: theme.spacing[3],
-      backgroundColor: theme.colors.background,
-      borderRadius: theme.borderRadius.md,
+      ...mixins.columnLayout,
     },
     comparisonTitle: {
       fontSize: theme.typography.fontSize.sm,
@@ -64,15 +61,11 @@ export const createStatisticsStyles = (theme: Theme) => {
     },
     // 최근 통계 섹션 스타일
     recentStatsContainer: {
-      flexDirection: "row" as const,
-      justifyContent: "space-between" as const,
+      ...mixins.flexRowBetween,
       gap: theme.spacing[4],
     },
     recentStatsColumn: {
-      flex: 1,
-      padding: theme.spacing[3],
-      backgroundColor: theme.colors.background,
-      borderRadius: theme.borderRadius.md,
+      ...mixins.columnLayout,
     },
     recentStatsTitle: {
       fontSize: theme.typography.fontSize.sm,
@@ -82,8 +75,7 @@ export const createStatisticsStyles = (theme: Theme) => {
     },
     // 연속 현황 비교 스타일
     streakComparisonContainer: {
-      flexDirection: "row" as const,
-      justifyContent: "space-between" as const,
+      ...mixins.flexRowBetween,
       gap: theme.spacing[2],
       paddingHorizontal: theme.spacing[2],
     },

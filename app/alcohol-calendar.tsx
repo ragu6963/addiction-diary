@@ -1,5 +1,5 @@
 import { ThemedView } from "@/components/themed-view";
-import { createCalendarTheme, useTheme } from "@/hooks/use-styles";
+import { createCalendarTheme, useStyles, useTheme } from "@/hooks/use-styles";
 import { createAlcoholCalendarStyles } from "@/styles/alcohol-calendar.styles";
 import {
   addNewAlcoholRecord,
@@ -14,7 +14,7 @@ import { Calendar } from "react-native-calendars";
 
 const AlcoholCalendarScreen = memo(() => {
   const theme = useTheme();
-  const styles = createAlcoholCalendarStyles(theme);
+  const styles = useStyles(createAlcoholCalendarStyles);
 
   const [markedDates, setMarkedDates] = useState<MarkedDates>({});
   const [streakDays, setStreakDays] = useState(0);
@@ -26,10 +26,10 @@ const AlcoholCalendarScreen = memo(() => {
     return {
       ...baseTheme,
       // 금주 달력용 색상 커스터마이징
-      todayTextColor: "#ff8c00",
-      selectedDayBackgroundColor: "#ff8c00",
-      selectedDayTextColor: "#ffffff",
-      arrowColor: "#ff8c00",
+      todayTextColor: theme.appColors.alcohol.primary,
+      selectedDayBackgroundColor: theme.appColors.alcohol.primary,
+      selectedDayTextColor: theme.appColors.common.white,
+      arrowColor: theme.appColors.alcohol.primary,
     };
   }, [theme]);
 
@@ -43,7 +43,7 @@ const AlcoholCalendarScreen = memo(() => {
         // 최대 5개까지 dot 표시 (너무 많으면 UI가 복잡해짐)
         const maxDots = Math.min(count, 5);
         const dots = Array.from({ length: maxDots }, () => ({
-          color: "#ff8c00", // 주황색 점으로 표시
+          color: theme.appColors.alcohol.primary,
         }));
 
         marked[date] = {

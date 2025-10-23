@@ -1,5 +1,5 @@
 import { ThemedView } from "@/components/themed-view";
-import { useTheme } from "@/hooks/use-styles";
+import { useStyles, useTheme } from "@/hooks/use-styles";
 import { createRecordsStyles } from "@/styles/records.styles";
 import {
   clearAllCombinedRecords,
@@ -13,7 +13,7 @@ import { Alert, FlatList, TouchableOpacity } from "react-native";
 
 const RecordsScreen = memo(() => {
   const theme = useTheme();
-  const styles = createRecordsStyles(theme);
+  const styles = useStyles(createRecordsStyles);
 
   const [records, setRecords] = useState<CombinedRecordItem[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -95,7 +95,10 @@ const RecordsScreen = memo(() => {
     ({ item }: { item: CombinedRecordItem }) => {
       const typeIcon = item.type === "addiction" ? "🔴" : "🟠";
       const typeText = item.type === "addiction" ? "금욕" : "금주";
-      const typeColor = item.type === "addiction" ? "#ff6b6b" : "#ff8c00";
+      const typeColor =
+        item.type === "addiction"
+          ? theme.appColors.addiction.primary
+          : theme.appColors.alcohol.primary;
 
       return (
         <ThemedView style={styles.listItem}>
@@ -141,7 +144,12 @@ const RecordsScreen = memo(() => {
         <Card containerStyle={styles.cardContainer}>
           <ThemedView style={styles.typeStatsContainer}>
             <ThemedView style={styles.typeStatsColumn}>
-              <Text style={[styles.typeStatsTitle, { color: "#ff6b6b" }]}>
+              <Text
+                style={[
+                  styles.typeStatsTitle,
+                  { color: theme.appColors.addiction.primary },
+                ]}
+              >
                 🔴 금욕 기록
               </Text>
               <ThemedView style={styles.statsRow}>
@@ -155,7 +163,12 @@ const RecordsScreen = memo(() => {
             </ThemedView>
 
             <ThemedView style={styles.typeStatsColumn}>
-              <Text style={[styles.typeStatsTitle, { color: "#ff8c00" }]}>
+              <Text
+                style={[
+                  styles.typeStatsTitle,
+                  { color: theme.appColors.alcohol.primary },
+                ]}
+              >
                 🟠 금주 기록
               </Text>
               <ThemedView style={styles.statsRow}>

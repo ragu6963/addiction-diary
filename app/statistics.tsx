@@ -1,5 +1,5 @@
 import { ThemedView } from "@/components/themed-view";
-import { useTheme } from "@/hooks/use-styles";
+import { useStyles, useTheme } from "@/hooks/use-styles";
 import { createStatisticsStyles } from "@/styles/statistics.styles";
 import {
   calculateLongestStreak,
@@ -14,7 +14,7 @@ import { FlatList } from "react-native";
 
 const StatisticsScreen = memo(() => {
   const theme = useTheme();
-  const styles = createStatisticsStyles(theme);
+  const styles = useStyles(createStatisticsStyles);
 
   // 금욕 통계
   const [addictionTotalDays, setAddictionTotalDays] = useState(0);
@@ -168,7 +168,10 @@ const StatisticsScreen = memo(() => {
               <ThemedView style={styles.streakComparisonColumn}>
                 <Text
                   h4
-                  style={[styles.streakComparisonTitle, { color: "#ff6b6b" }]}
+                  style={[
+                    styles.streakComparisonTitle,
+                    { color: theme.appColors.addiction.primary },
+                  ]}
                 >
                   🔴 금욕
                 </Text>
@@ -201,7 +204,10 @@ const StatisticsScreen = memo(() => {
               <ThemedView style={styles.streakComparisonColumn}>
                 <Text
                   h4
-                  style={[styles.streakComparisonTitle, { color: "#ff8c00" }]}
+                  style={[
+                    styles.streakComparisonTitle,
+                    { color: theme.appColors.alcohol.primary },
+                  ]}
                 >
                   🟠 금주
                 </Text>
@@ -243,7 +249,12 @@ const StatisticsScreen = memo(() => {
             </Text>
             <ThemedView style={styles.comparisonContainer}>
               <ThemedView style={styles.comparisonColumn}>
-                <Text style={[styles.comparisonTitle, { color: "#ff6b6b" }]}>
+                <Text
+                  style={[
+                    styles.comparisonTitle,
+                    { color: theme.appColors.addiction.primary },
+                  ]}
+                >
                   🔴 금욕 기록
                 </Text>
                 <ThemedView style={styles.statsRow}>
@@ -259,7 +270,12 @@ const StatisticsScreen = memo(() => {
               </ThemedView>
 
               <ThemedView style={styles.comparisonColumn}>
-                <Text style={[styles.comparisonTitle, { color: "#ff8c00" }]}>
+                <Text
+                  style={[
+                    styles.comparisonTitle,
+                    { color: theme.appColors.alcohol.primary },
+                  ]}
+                >
                   🟠 금주 기록
                 </Text>
                 <ThemedView style={styles.statsRow}>
@@ -284,7 +300,12 @@ const StatisticsScreen = memo(() => {
             </Text>
             <ThemedView style={styles.recentStatsContainer}>
               <ThemedView style={styles.recentStatsColumn}>
-                <Text style={[styles.recentStatsTitle, { color: "#ff6b6b" }]}>
+                <Text
+                  style={[
+                    styles.recentStatsTitle,
+                    { color: theme.appColors.addiction.primary },
+                  ]}
+                >
                   🔴 금욕 기록
                 </Text>
                 <ThemedView style={styles.statsRow}>
@@ -322,7 +343,12 @@ const StatisticsScreen = memo(() => {
               </ThemedView>
 
               <ThemedView style={styles.recentStatsColumn}>
-                <Text style={[styles.recentStatsTitle, { color: "#ff8c00" }]}>
+                <Text
+                  style={[
+                    styles.recentStatsTitle,
+                    { color: theme.appColors.alcohol.primary },
+                  ]}
+                >
                   🟠 금주 기록
                 </Text>
                 <ThemedView style={styles.statsRow}>

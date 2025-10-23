@@ -1,6 +1,73 @@
 import { Theme } from "@/constants/design-tokens";
 import { StyleSheet } from "react-native";
 
+// 공통 믹스인 패턴
+export const createMixins = (theme: Theme) => ({
+  // 중앙 정렬 텍스트
+  centerText: {
+    textAlign: "center" as const,
+    fontSize: theme.typography.fontSize.base,
+    color: theme.colors.text,
+  },
+
+  // Flex 행 레이아웃 (양쪽 정렬)
+  flexRowBetween: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+    alignItems: "center" as const,
+  },
+
+  // Flex 행 레이아웃 (중앙 정렬)
+  flexRowCenter: {
+    flexDirection: "row" as const,
+    justifyContent: "center" as const,
+    alignItems: "center" as const,
+  },
+
+  // 컬럼 레이아웃
+  columnLayout: {
+    flex: 1,
+    padding: theme.spacing[3],
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.borderRadius.md,
+  },
+
+  // 제목 스타일 변형
+  titleVariants: {
+    large: {
+      fontSize: theme.typography.fontSize["3xl"],
+      fontWeight: theme.typography.fontWeight.bold,
+      color: theme.colors.text,
+    },
+    medium: {
+      fontSize: theme.typography.fontSize["2xl"],
+      fontWeight: theme.typography.fontWeight.bold,
+      color: theme.colors.text,
+    },
+    small: {
+      fontSize: theme.typography.fontSize.lg,
+      fontWeight: theme.typography.fontWeight.semibold,
+      color: theme.colors.text,
+    },
+  },
+
+  // 버튼 스타일 변형
+  buttonVariants: {
+    primary: {
+      backgroundColor: theme.colors.primary,
+      borderRadius: theme.borderRadius.md,
+      paddingVertical: theme.spacing[3],
+      paddingHorizontal: theme.spacing[4],
+    },
+    secondary: {
+      backgroundColor: theme.colors.secondary,
+      borderRadius: theme.borderRadius.md,
+      paddingVertical: theme.spacing[3],
+      paddingHorizontal: theme.spacing[4],
+    },
+  },
+});
+
 // 공통 컴포넌트 스타일
 export const createCommonStyles = (theme: Theme) => ({
   // 카드 컨테이너 스타일 (모든 화면에서 공통 사용)
