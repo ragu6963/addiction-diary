@@ -12,6 +12,56 @@ export interface RecordData {
   };
 }
 
+// 새로운 음주 기록 데이터 구조
+export interface AlcoholRecord {
+  id: string;
+  date: string; // YYYY-MM-DD
+  timestamp: string; // ISO string
+  time: string; // HH:MM 형식
+
+  // 음주 상세 정보
+  drinks: DrinkItem[];
+  totalAlcoholContent: number; // 총 알코올 함량 (g)
+  totalVolume: number; // 총 음주량 (ml)
+}
+
+export interface DrinkItem {
+  id: string;
+  type: DrinkType; // 음료 종류
+  volume: number; // 용량 (ml)
+  alcoholPercentage: number; // 알코올 도수 (%)
+  alcoholContent: number; // 알코올 함량 (g)
+  quantity: number; // 수량
+  unit: DrinkUnit; // 단위 (병, 캔, 잔 등)
+}
+
+export type DrinkType =
+  | "beer" // 맥주
+  | "soju" // 소주
+  | "wine" // 와인
+  | "whiskey" // 위스키
+  | "cocktail" // 칵테일
+  | "makgeolli" // 막걸리
+  | "other"; // 기타
+
+export type DrinkUnit =
+  | "bottle" // 병
+  | "can" // 캔
+  | "glass" // 잔
+  | "shot" // 잔
+  | "cup" // 컵
+  | "ml"; // 밀리리터
+
+// 새로운 음주 기록 데이터 구조
+export interface AlcoholRecordData {
+  [date: string]: {
+    records: AlcoholRecord[];
+    totalAlcoholContent: number;
+    totalVolume: number;
+    lastRecordTime: string;
+  };
+}
+
 export interface MarkedDates {
   [key: string]: {
     marked?: boolean;
@@ -19,16 +69,69 @@ export interface MarkedDates {
     dots?: { color: string }[];
     count?: number;
     lastRecordTime?: string;
+    // 음주 기록 추가 정보
+    totalAlcoholContent?: number;
+    totalVolume?: number;
   };
 }
 
 const STORAGE_KEY = "masturbationRecords";
 const ALCOHOL_STORAGE_KEY = "alcoholRecords";
 
+// 음료 프리셋 데이터
+export const DRINK_PRESETS: Record<DrinkType, Partial<DrinkItem>[]> = {
+  beer: [
+    { type: "beer", volume: 500, alcoholPercentage: 4.5, unit: "bottle" }, // 일반 맥주
+    { type: "beer", volume: 330, alcoholPercentage: 5.0, unit: "can" }, // 캔 맥주
+    { type: "beer", volume: 250, alcoholPercentage: 4.5, unit: "glass" }, // 맥주 잔
+  ],
+  soju: [
+    { type: "soju", volume: 360, alcoholPercentage: 17.0, unit: "bottle" }, // 일반 소주
+    { type: "soju", volume: 50, alcoholPercentage: 17.0, unit: "shot" }, // 소주 잔
+  ],
+  wine: [
+    { type: "wine", volume: 750, alcoholPercentage: 12.0, unit: "bottle" }, // 와인 병
+    { type: "wine", volume: 150, alcoholPercentage: 12.0, unit: "glass" }, // 와인 잔
+  ],
+  whiskey: [
+    { type: "whiskey", volume: 30, alcoholPercentage: 40.0, unit: "shot" }, // 위스키 잔
+    { type: "whiskey", volume: 700, alcoholPercentage: 40.0, unit: "bottle" }, // 위스키 병
+  ],
+  cocktail: [
+    { type: "cocktail", volume: 200, alcoholPercentage: 15.0, unit: "glass" }, // 칵테일 잔
+  ],
+  makgeolli: [
+    { type: "makgeolli", volume: 750, alcoholPercentage: 6.0, unit: "bottle" }, // 막걸리 병
+    { type: "makgeolli", volume: 200, alcoholPercentage: 6.0, unit: "cup" }, // 막걸리 컵
+  ],
+  other: [
+    { type: "other", volume: 100, alcoholPercentage: 0, unit: "ml" }, // 기타
+  ],
+};
+
+// 알코올 함량 계산 함수
+export const calculateAlcoholContent = (
+  volume: number,
+  alcoholPercentage: number
+): number => {
+  // 알코올 밀도: 0.789 g/ml
+  return ((volume * alcoholPercentage) / 100) * 0.789;
+};
+
+// 음료 단위별 기본 용량 (ml)
+export const UNIT_VOLUMES: Record<DrinkUnit, number> = {
+  bottle: 500, // 기본 병 용량
+  can: 330, // 기본 캔 용량
+  glass: 200, // 기본 잔 용량
+  shot: 30, // 기본 잔 용량
+  cup: 250, // 기본 컵 용량
+  ml: 1, // 밀리리터
+};
+
 // 데이터 캐시 (메모리 캐싱)
 let dataCache: RecordData | null = null;
 let cacheTimestamp: number = 0;
-let alcoholDataCache: RecordData | null = null;
+let alcoholDataCache: AlcoholRecordData | null = null;
 let alcoholCacheTimestamp: number = 0;
 const CACHE_DURATION = 5000; // 5초 캐시
 
@@ -282,9 +385,9 @@ export const formatDate = (dateStr: string): string => {
 };
 
 /**
- * 금주 데이터를 로드합니다 (캐시 최적화)
+ * 새로운 음주 기록 데이터를 로드합니다 (캐시 최적화)
  */
-export const loadAlcoholRecordData = async (): Promise<RecordData> => {
+export const loadAlcoholRecordData = async (): Promise<AlcoholRecordData> => {
   try {
     // 캐시된 데이터가 유효한지 확인
     const now = Date.now();
@@ -300,59 +403,20 @@ export const loadAlcoholRecordData = async (): Promise<RecordData> => {
     }
 
     const parsedData = JSON.parse(savedData);
-
-    // 기존 데이터가 배열인 경우 (하위 호환성)
-    if (Array.isArray(parsedData)) {
-      const convertedData: RecordData = {};
-      parsedData.forEach((date: string) => {
-        convertedData[date] = {
-          count: 1,
-          lastRecordTime: "기록 시간 없음",
-          records: [
-            {
-              id: `${date}-1`,
-              timestamp: new Date(date).toISOString(),
-              time: "기록 시간 없음",
-            },
-          ],
-        };
-      });
-      alcoholDataCache = convertedData;
-      alcoholCacheTimestamp = now;
-      return convertedData;
-    }
-
-    // 새로운 객체 형태인 경우
-    const recordData: RecordData = {};
-    Object.keys(parsedData).forEach((date) => {
-      const data = parsedData[date];
-      recordData[date] = {
-        count: data.count || 1,
-        lastRecordTime: data.lastRecordTime || "기록 시간 없음",
-        records: data.records || [
-          {
-            id: `${date}-1`,
-            timestamp: new Date(date).toISOString(),
-            time: data.lastRecordTime || "기록 시간 없음",
-          },
-        ],
-      };
-    });
-
-    alcoholDataCache = recordData;
+    alcoholDataCache = parsedData;
     alcoholCacheTimestamp = now;
-    return recordData;
+    return parsedData;
   } catch (error) {
-    console.error("금주 데이터 로드 실패:", error);
+    console.error("음주 데이터 로드 실패:", error);
     return {};
   }
 };
 
 /**
- * 금주 데이터를 저장합니다 (캐시 무효화)
+ * 새로운 음주 기록 데이터를 저장합니다 (캐시 무효화)
  */
 export const saveAlcoholRecordData = async (
-  data: RecordData
+  data: AlcoholRecordData
 ): Promise<void> => {
   try {
     await AsyncStorage.setItem(ALCOHOL_STORAGE_KEY, JSON.stringify(data));
@@ -360,46 +424,32 @@ export const saveAlcoholRecordData = async (
     alcoholDataCache = data;
     alcoholCacheTimestamp = Date.now();
   } catch (error) {
-    console.error("금주 데이터 저장 실패:", error);
+    console.error("음주 데이터 저장 실패:", error);
     throw error;
   }
 };
 
 /**
- * 새로운 금주 기록을 추가합니다
+ * 새로운 음주 기록을 추가합니다
  */
 export const addNewAlcoholRecord = async (
-  dateStr: string
-): Promise<RecordData> => {
+  alcoholRecord: AlcoholRecord
+): Promise<AlcoholRecordData> => {
   const data = await loadAlcoholRecordData();
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  const recordId = `${dateStr}-${Date.now()}`;
+  const dateStr = alcoholRecord.date;
 
   if (!data[dateStr]) {
     data[dateStr] = {
-      count: 1,
-      lastRecordTime: timeStr,
-      records: [
-        {
-          id: recordId,
-          timestamp: now.toISOString(),
-          time: timeStr,
-        },
-      ],
+      records: [alcoholRecord],
+      totalAlcoholContent: alcoholRecord.totalAlcoholContent,
+      totalVolume: alcoholRecord.totalVolume,
+      lastRecordTime: alcoholRecord.time,
     };
   } else {
-    data[dateStr].count += 1;
-    data[dateStr].lastRecordTime = timeStr;
-    data[dateStr].records.push({
-      id: recordId,
-      timestamp: now.toISOString(),
-      time: timeStr,
-    });
+    data[dateStr].records.push(alcoholRecord);
+    data[dateStr].totalAlcoholContent += alcoholRecord.totalAlcoholContent;
+    data[dateStr].totalVolume += alcoholRecord.totalVolume;
+    data[dateStr].lastRecordTime = alcoholRecord.time;
   }
 
   await saveAlcoholRecordData(data);
@@ -407,27 +457,34 @@ export const addNewAlcoholRecord = async (
 };
 
 /**
- * 특정 금주 기록을 삭제합니다
+ * 특정 음주 기록을 삭제합니다
  */
 export const deleteAlcoholRecord = async (
   dateStr: string,
   recordId: string
-): Promise<RecordData> => {
+): Promise<AlcoholRecordData> => {
   const data = await loadAlcoholRecordData();
 
   if (data[dateStr]) {
-    data[dateStr].records = data[dateStr].records.filter(
-      (r) => r.id !== recordId
+    const recordIndex = data[dateStr].records.findIndex(
+      (r) => r.id === recordId
     );
-    data[dateStr].count = data[dateStr].records.length;
+    if (recordIndex !== -1) {
+      const deletedRecord = data[dateStr].records[recordIndex];
+      data[dateStr].records.splice(recordIndex, 1);
 
-    if (data[dateStr].count === 0) {
-      delete data[dateStr];
-    } else {
-      // 마지막 기록 시간 업데이트
-      const lastRecord =
-        data[dateStr].records[data[dateStr].records.length - 1];
-      data[dateStr].lastRecordTime = lastRecord.time;
+      // 총합 업데이트
+      data[dateStr].totalAlcoholContent -= deletedRecord.totalAlcoholContent;
+      data[dateStr].totalVolume -= deletedRecord.totalVolume;
+
+      if (data[dateStr].records.length === 0) {
+        delete data[dateStr];
+      } else {
+        // 마지막 기록 시간 업데이트
+        const lastRecord =
+          data[dateStr].records[data[dateStr].records.length - 1];
+        data[dateStr].lastRecordTime = lastRecord.time;
+      }
     }
   }
 
@@ -507,7 +564,7 @@ export const loadCombinedRecords = async (): Promise<{
       });
     });
 
-    // 금주 기록 처리
+    // 새로운 음주 기록 처리
     Object.keys(alcoholData).forEach((date) => {
       uniqueDates.add(date);
       alcoholDates.add(date);
@@ -577,6 +634,150 @@ export const deleteCombinedRecord = async (
  */
 export const clearAllCombinedRecords = async (): Promise<void> => {
   await Promise.all([clearAllRecords(), clearAllAlcoholRecords()]);
+};
+
+/**
+ * 음주 기록을 달력 표시용으로 변환합니다
+ */
+export const getAlcoholMarkedDates = async (): Promise<MarkedDates> => {
+  const data = await loadAlcoholRecordData();
+  const marked: MarkedDates = {};
+
+  Object.keys(data).forEach((date) => {
+    const dayData = data[date];
+    const recordCount = dayData.records.length;
+
+    // 알코올 함량에 따른 색상 강도 조절
+    const alcoholContent = dayData.totalAlcoholContent;
+    let colorIntensity = 0.3; // 기본 투명도
+
+    if (alcoholContent > 0) {
+      if (alcoholContent <= 20) colorIntensity = 0.4; // 적음
+      else if (alcoholContent <= 40) colorIntensity = 0.6; // 보통
+      else if (alcoholContent <= 60) colorIntensity = 0.8; // 많음
+      else colorIntensity = 1.0; // 매우 많음
+    }
+
+    // 최대 5개까지 dot 표시
+    const maxDots = Math.min(recordCount, 5);
+    const dots = Array.from({ length: maxDots }, () => ({
+      color: `rgba(255, 140, 0, ${colorIntensity})`, // 주황색 투명도 적용
+    }));
+
+    marked[date] = {
+      dots: dots,
+      count: recordCount,
+      lastRecordTime: dayData.lastRecordTime,
+      // 추가 정보
+      totalAlcoholContent: dayData.totalAlcoholContent,
+      totalVolume: dayData.totalVolume,
+    };
+  });
+
+  return marked;
+};
+
+/**
+ * 음주 통계 데이터를 계산합니다
+ */
+export const getAlcoholStatistics = async () => {
+  const data = await loadAlcoholRecordData();
+  const now = new Date();
+
+  // 이번 주 범위 계산
+  const startOfWeek = new Date(now);
+  const day = startOfWeek.getDay();
+  const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+  startOfWeek.setDate(diff);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  // 이번 달
+  const thisMonth = `${now.getFullYear()}-${(now.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}`;
+
+  let totalDays = 0;
+  let totalRecords = 0;
+  let totalAlcoholContent = 0;
+  let totalVolume = 0;
+  let thisWeekAlcohol = 0;
+  let thisWeekVolume = 0;
+  let thisMonthAlcohol = 0;
+  let thisMonthVolume = 0;
+  let thisWeekRecords = 0;
+  let thisMonthRecords = 0;
+
+  // 음료 종류별 통계
+  const drinkTypeStats: Record<
+    DrinkType,
+    { count: number; alcoholContent: number; volume: number }
+  > = {
+    beer: { count: 0, alcoholContent: 0, volume: 0 },
+    soju: { count: 0, alcoholContent: 0, volume: 0 },
+    wine: { count: 0, alcoholContent: 0, volume: 0 },
+    whiskey: { count: 0, alcoholContent: 0, volume: 0 },
+    cocktail: { count: 0, alcoholContent: 0, volume: 0 },
+    makgeolli: { count: 0, alcoholContent: 0, volume: 0 },
+    other: { count: 0, alcoholContent: 0, volume: 0 },
+  };
+
+  Object.keys(data).forEach((date) => {
+    const dayData = data[date];
+    const dateObj = new Date(date);
+
+    totalDays++;
+    totalRecords += dayData.records.length;
+    totalAlcoholContent += dayData.totalAlcoholContent;
+    totalVolume += dayData.totalVolume;
+
+    // 이번 주 통계
+    if (dateObj >= startOfWeek && dateObj <= endOfWeek) {
+      thisWeekAlcohol += dayData.totalAlcoholContent;
+      thisWeekVolume += dayData.totalVolume;
+      thisWeekRecords += dayData.records.length;
+    }
+
+    // 이번 달 통계
+    if (date.startsWith(thisMonth)) {
+      thisMonthAlcohol += dayData.totalAlcoholContent;
+      thisMonthVolume += dayData.totalVolume;
+      thisMonthRecords += dayData.records.length;
+    }
+
+    // 음료 종류별 통계
+    dayData.records.forEach((record) => {
+      record.drinks.forEach((drink) => {
+        drinkTypeStats[drink.type].count += drink.quantity;
+        drinkTypeStats[drink.type].alcoholContent += drink.alcoholContent;
+        drinkTypeStats[drink.type].volume += drink.volume * drink.quantity;
+      });
+    });
+  });
+
+  // 연속 금주 일수 계산
+  const alcoholDates = Object.keys(data);
+  const currentStreak = calculateStreakDays(alcoholDates);
+  const longestStreak = calculateLongestStreak(alcoholDates);
+
+  return {
+    totalDays,
+    totalRecords,
+    totalAlcoholContent,
+    totalVolume,
+    thisWeekAlcohol,
+    thisWeekVolume,
+    thisWeekRecords,
+    thisMonthAlcohol,
+    thisMonthVolume,
+    thisMonthRecords,
+    currentStreak,
+    longestStreak,
+    drinkTypeStats,
+  };
 };
 
 /**

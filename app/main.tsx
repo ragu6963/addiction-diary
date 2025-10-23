@@ -57,10 +57,7 @@ export default function MainScreen() {
 
       {/* 네비게이션 바 */}
       <ThemedView style={[styles.navBar, { backgroundColor: "transparent" }]}>
-        <TouchableOpacity
-          style={styles.hamburgerButton}
-          onPress={toggleMenu}
-        >
+        <TouchableOpacity style={styles.hamburgerButton} onPress={toggleMenu}>
           <ThemedView style={styles.hamburgerLine} />
           <ThemedView style={styles.hamburgerLine} />
           <ThemedView style={styles.hamburgerLine} />

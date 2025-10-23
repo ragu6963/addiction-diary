@@ -10,6 +10,10 @@ export {
 
 // 화면별 스타일 팩토리들
 export { createAlcoholCalendarStyles } from "./alcohol-calendar.styles";
+export {
+  createAlcoholRecordModalStyles,
+  staticAlcoholRecordModalStyles,
+} from "./alcohol-record-modal.styles";
 export { createCalendarStyles } from "./calendar.styles";
 export {
   createCommonStyles,

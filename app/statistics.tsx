@@ -4,7 +4,7 @@ import { createStatisticsStyles } from "@/styles/statistics.styles";
 import {
   calculateLongestStreak,
   calculateStreakDays,
-  loadAlcoholRecordData,
+  getAlcoholStatistics,
   loadCombinedRecords,
   loadRecordData,
 } from "@/utils/dataManager";
@@ -31,6 +31,8 @@ const StatisticsScreen = memo(() => {
   const [alcoholLongestStreak, setAlcoholLongestStreak] = useState(0);
   const [alcoholThisWeek, setAlcoholThisWeek] = useState(0);
   const [alcoholThisMonth, setAlcoholThisMonth] = useState(0);
+  const [alcoholTotalContent, setAlcoholTotalContent] = useState(0);
+  const [alcoholTotalVolume, setAlcoholTotalVolume] = useState(0);
 
   // 전체 통계
   const [totalCombinedDays, setTotalCombinedDays] = useState(0);
@@ -38,9 +40,9 @@ const StatisticsScreen = memo(() => {
 
   const loadStatistics = useCallback(async () => {
     try {
-      const [addictionData, alcoholData, combinedData] = await Promise.all([
+      const [addictionData, alcoholStats, combinedData] = await Promise.all([
         loadRecordData(),
-        loadAlcoholRecordData(),
+        getAlcoholStatistics(),
         loadCombinedRecords(),
       ]);
 
@@ -83,28 +85,15 @@ const StatisticsScreen = memo(() => {
       setAddictionThisWeek(addictionThisWeekCount);
       setAddictionThisMonth(addictionThisMonthCount);
 
-      // 금주 통계 계산
-      const alcoholDates = Object.keys(alcoholData);
-      const alcoholTotalCount = Object.values(alcoholData).reduce(
-        (sum, data) => sum + data.count,
-        0
-      );
-      const alcoholThisMonthCount = alcoholDates
-        .filter((date) => date.startsWith(thisMonth))
-        .reduce((sum, date) => sum + alcoholData[date].count, 0);
-      const alcoholThisWeekCount = alcoholDates
-        .filter((dateStr) => {
-          const date = new Date(dateStr);
-          return date >= startOfWeek && date <= endOfWeek;
-        })
-        .reduce((sum, date) => sum + alcoholData[date].count, 0);
-
-      setAlcoholTotalDays(alcoholDates.length);
-      setAlcoholTotalRecords(alcoholTotalCount);
-      setAlcoholCurrentStreak(calculateStreakDays(alcoholDates));
-      setAlcoholLongestStreak(calculateLongestStreak(alcoholDates));
-      setAlcoholThisWeek(alcoholThisWeekCount);
-      setAlcoholThisMonth(alcoholThisMonthCount);
+      // 새로운 음주 통계 설정
+      setAlcoholTotalDays(alcoholStats.totalDays);
+      setAlcoholTotalRecords(alcoholStats.totalRecords);
+      setAlcoholCurrentStreak(alcoholStats.currentStreak);
+      setAlcoholLongestStreak(alcoholStats.longestStreak);
+      setAlcoholThisWeek(alcoholStats.thisWeekRecords);
+      setAlcoholThisMonth(alcoholStats.thisMonthRecords);
+      setAlcoholTotalContent(alcoholStats.totalAlcoholContent);
+      setAlcoholTotalVolume(alcoholStats.totalVolume);
 
       // 전체 통합 통계
       setTotalCombinedDays(combinedData.totalDays);
@@ -315,6 +304,18 @@ const StatisticsScreen = memo(() => {
                 <ThemedView style={styles.statsRow}>
                   <Text style={styles.statLabel}>기록 횟수</Text>
                   <Text style={styles.statValue}>{alcoholTotalRecords}회</Text>
+                </ThemedView>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>총 알코올 함량</Text>
+                  <Text style={styles.statValue}>
+                    {alcoholTotalContent.toFixed(1)}g
+                  </Text>
+                </ThemedView>
+                <ThemedView style={styles.statsRow}>
+                  <Text style={styles.statLabel}>총 음주량</Text>
+                  <Text style={styles.statValue}>
+                    {alcoholTotalVolume.toFixed(0)}ml
+                  </Text>
                 </ThemedView>
               </ThemedView>
             </ThemedView>

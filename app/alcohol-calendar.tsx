@@ -1,11 +1,12 @@
+import AlcoholRecordModal from "@/components/alcohol/AlcoholRecordModal";
 import { ThemedView } from "@/components/themed-view";
 import { createCalendarTheme, useStyles, useTheme } from "@/hooks/use-styles";
 import { createAlcoholCalendarStyles } from "@/styles/alcohol-calendar.styles";
 import {
   addNewAlcoholRecord,
+  AlcoholRecord,
   calculateStreakDays,
-  loadAlcoholRecordData,
-  MarkedDates,
+  getAlcoholMarkedDates,
 } from "@/utils/dataManager";
 import { Button, Card, Text } from "@rneui/themed";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -16,9 +17,11 @@ const AlcoholCalendarScreen = memo(() => {
   const theme = useTheme();
   const styles = useStyles(createAlcoholCalendarStyles);
 
-  const [markedDates, setMarkedDates] = useState<MarkedDates>({});
+  const [markedDates, setMarkedDates] = useState({});
   const [streakDays, setStreakDays] = useState(0);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
 
   // 달력 테마 메모이제이션 (금주용 주황색 테마)
   const calendarTheme = useMemo(() => {
@@ -35,79 +38,40 @@ const AlcoholCalendarScreen = memo(() => {
 
   const loadData = useCallback(async () => {
     try {
-      const recordData = await loadAlcoholRecordData();
-      const marked: MarkedDates = {};
-
-      Object.keys(recordData).forEach((date) => {
-        const count = recordData[date].count;
-        // 최대 5개까지 dot 표시 (너무 많으면 UI가 복잡해짐)
-        const maxDots = Math.min(count, 5);
-        const dots = Array.from({ length: maxDots }, () => ({
-          color: theme.appColors.alcohol.primary,
-        }));
-
-        marked[date] = {
-          dots: dots,
-          count: count,
-          lastRecordTime: recordData[date].lastRecordTime,
-        };
-      });
-
+      const marked = await getAlcoholMarkedDates();
       setMarkedDates(marked);
-      setStreakDays(calculateStreakDays(Object.keys(marked)));
+
+      // 연속 금주 일수 계산 (음주 기록이 있는 날짜들)
+      const alcoholDates = Object.keys(marked);
+      setStreakDays(calculateStreakDays(alcoholDates));
     } catch (error) {
-      console.error("금주 데이터 로드 실패:", error);
+      console.error("음주 데이터 로드 실패:", error);
     }
-  }, [theme.appColors.alcohol.primary]);
+  }, []);
 
   // 저장된 데이터 로드
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // 통합된 기록 추가 함수
-  const addRecordForDate = useCallback(
-    async (dateStr: string) => {
+  // 음주 기록 모달 열기
+  const openRecordModal = useCallback((dateStr: string) => {
+    setSelectedDate(dateStr);
+    setModalVisible(true);
+  }, []);
+
+  // 음주 기록 저장
+  const handleSaveRecord = useCallback(
+    async (record: AlcoholRecord) => {
       try {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-
-        const isMarked = markedDates[dateStr]?.marked || false;
-        const currentCount = markedDates[dateStr]?.count || 0;
-
-        // 날짜 포맷팅 (한국어)
-        const selectedDate = new Date(dateStr);
-        const year = selectedDate.getFullYear();
-        const month = selectedDate.getMonth() + 1;
-        const date = selectedDate.getDate();
-        const dayOfWeek = ["일", "월", "화", "수", "목", "금", "토"][
-          selectedDate.getDay()
-        ];
-        const formattedDate = `${year}년 ${month}월 ${date}일 (${dayOfWeek})`;
-
-        const message = isMarked
-          ? `${formattedDate}에 음주 기록을 추가하시겠습니까?\n\n현재 기록: ${currentCount}회\n기록 시간: ${timeStr}`
-          : `${formattedDate}에 음주 기록을 추가하시겠습니까?\n\n기록 시간: ${timeStr}`;
-
-        Alert.alert("음주 기록 추가", message, [
-          { text: "취소", style: "cancel" },
-          {
-            text: isMarked ? "추가" : "기록",
-            onPress: async () => {
-              await addNewAlcoholRecord(dateStr);
-              await loadData(); // 데이터 새로고침
-            },
-          },
-        ]);
+        await addNewAlcoholRecord(record);
+        await loadData(); // 데이터 새로고침
       } catch (error) {
-        console.error("음주 기록 추가 실패:", error);
+        console.error("음주 기록 저장 실패:", error);
         Alert.alert("오류", "기록을 저장하는 중 오류가 발생했습니다.");
       }
     },
-    [markedDates, loadData]
+    [loadData]
   );
 
   // 오늘 날짜 기록 추가
@@ -117,13 +81,13 @@ const AlcoholCalendarScreen = memo(() => {
     const month = (now.getMonth() + 1).toString().padStart(2, "0");
     const date = now.getDate().toString().padStart(2, "0");
     const dateStr = `${year}-${month}-${date}`;
-    await addRecordForDate(dateStr);
+    openRecordModal(dateStr);
   };
 
   // 선택한 날짜 기록 추가
   const onDayPress = async (day: any) => {
     const dateStr = day.dateString; // YYYY-MM-DD 형식
-    await addRecordForDate(dateStr);
+    openRecordModal(dateStr);
   };
 
   const goToToday = () => {
@@ -210,6 +174,14 @@ const AlcoholCalendarScreen = memo(() => {
           titleStyle={styles.recordButtonText}
         />
       </Card>
+
+      {/* 음주 기록 모달 */}
+      <AlcoholRecordModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSaveRecord}
+        selectedDate={selectedDate}
+      />
     </ThemedView>
   );
 });
