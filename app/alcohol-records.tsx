@@ -1,15 +1,30 @@
+import AlcoholRecordModal from "@/components/alcohol/AlcoholRecordModal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useTheme } from "@/hooks/use-styles";
 import { createAlcoholRecordsStyles } from "@/styles";
-import { loadAlcoholRecordData } from "@/utils/dataManager";
+import {
+  AlcoholRecord,
+  clearAllAlcoholRecords,
+  deleteAlcoholRecord,
+  loadAlcoholRecordData,
+  updateAlcoholRecord,
+} from "@/utils/dataManager";
+import { Button } from "@rneui/themed";
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, RefreshControl, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface AlcoholRecordItem {
   id: string;
   date: string;
   time: string;
+  timestamp: string; // 원본 timestamp 추가
   drinks: {
     type: string;
     originalType: string;
@@ -28,6 +43,15 @@ const AlcoholRecordsScreen: React.FC = () => {
   const [records, setRecords] = useState<AlcoholRecordItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<AlcoholRecord | null>(
+    null
+  );
+  const [expandedRecords, setExpandedRecords] = useState<Set<string>>(
+    new Set()
+  );
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [totalDays, setTotalDays] = useState(0);
 
   const getDrinkName = (type: string): string => {
     const drinkNames: { [key: string]: string } = {
@@ -70,6 +94,7 @@ const AlcoholRecordsScreen: React.FC = () => {
             id: record.id,
             date: date,
             time: record.time,
+            timestamp: record.timestamp, // 원본 timestamp 추가
             drinks: record.drinks.map((drink) => ({
               type: getDrinkName(drink.type),
               originalType: drink.type,
@@ -86,12 +111,14 @@ const AlcoholRecordsScreen: React.FC = () => {
 
       // 최신 순으로 정렬
       const sortedRecords = Array.from(recordMap.values()).sort((a, b) => {
-        const dateA = new Date(`${a.date} ${a.time}`);
-        const dateB = new Date(`${b.date} ${b.time}`);
-        return dateB.getTime() - dateA.getTime();
+        return (
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
       });
 
       setRecords(sortedRecords);
+      setTotalRecords(sortedRecords.length);
+      setTotalDays(Object.keys(alcoholData).length);
     } catch (error) {
       console.error("음주 기록 로드 실패:", error);
     } finally {
@@ -109,6 +136,115 @@ const AlcoholRecordsScreen: React.FC = () => {
     loadData();
   }, [loadData]);
 
+  // 기록 삭제
+  const handleDeleteRecord = useCallback(
+    async (recordId: string, date: string) => {
+      Alert.alert("기록 삭제", "이 음주 기록을 삭제하시겠습니까?", [
+        {
+          text: "취소",
+          style: "cancel",
+        },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteAlcoholRecord(date, recordId);
+              await loadData(); // 데이터 새로고침
+            } catch (error) {
+              console.error("기록 삭제 실패:", error);
+              Alert.alert("오류", "기록 삭제에 실패했습니다.");
+            }
+          },
+        },
+      ]);
+    },
+    [loadData]
+  );
+
+  // 기록 수정
+  const handleEditRecord = useCallback((record: AlcoholRecordItem) => {
+    // AlcoholRecordItem을 AlcoholRecord로 변환
+    const alcoholRecord: AlcoholRecord = {
+      id: record.id,
+      date: record.date,
+      timestamp: record.timestamp, // 원본 timestamp 사용
+      time: record.time,
+      drinks: record.drinks.map((drink) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        type: drink.originalType as any,
+        volume: drink.volume,
+        alcoholPercentage: drink.alcoholPercentage,
+        alcoholContent: drink.alcoholContent,
+        quantity: drink.quantity,
+        unit: "ml" as any,
+      })),
+      totalAlcoholContent: record.totalAlcoholContent,
+      totalVolume: record.totalVolume,
+    };
+
+    setEditingRecord(alcoholRecord);
+    setEditModalVisible(true);
+  }, []);
+
+  // 수정된 기록 저장
+  const handleSaveEditedRecord = useCallback(
+    async (updatedRecord: AlcoholRecord) => {
+      try {
+        await updateAlcoholRecord(
+          updatedRecord.date,
+          updatedRecord.id,
+          updatedRecord
+        );
+        await loadData(); // 데이터 새로고침
+        setEditModalVisible(false);
+        setEditingRecord(null);
+      } catch (error) {
+        console.error("기록 수정 실패:", error);
+        Alert.alert("오류", "기록 수정에 실패했습니다.");
+      }
+    },
+    [loadData]
+  );
+
+  // 토글 기능
+  const toggleRecordExpansion = useCallback((recordId: string) => {
+    setExpandedRecords((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(recordId)) {
+        newSet.delete(recordId);
+      } else {
+        newSet.add(recordId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // 전체 삭제 기능
+  const onResetPress = useCallback(() => {
+    Alert.alert(
+      "모든 음주 기록 삭제",
+      "모든 음주 기록을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.",
+      [
+        { text: "취소", style: "cancel" },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await clearAllAlcoholRecords();
+              await loadData();
+              Alert.alert("완료", "모든 음주 기록이 삭제되었습니다.");
+            } catch (error) {
+              console.error("기록 초기화 실패:", error);
+              Alert.alert("오류", "기록 초기화 중 오류가 발생했습니다.");
+            }
+          },
+        },
+      ]
+    );
+  }, [loadData]);
+
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     const month = date.getMonth() + 1;
@@ -117,50 +253,116 @@ const AlcoholRecordsScreen: React.FC = () => {
     return `${month}/${day} (${dayOfWeek})`;
   };
 
-  const renderRecordItem = ({ item }: { item: AlcoholRecordItem }) => (
-    <View style={styles.recordItem}>
-      {/* 날짜와 시간 헤더 */}
-      <View style={styles.recordHeader}>
-        <View style={styles.dateTimeContainer}>
-          <ThemedText style={styles.dateText}>
-            {formatDate(item.date)}
-          </ThemedText>
-          <ThemedText style={styles.timeText}>{item.time}</ThemedText>
-        </View>
-        <View style={styles.summaryContainer}>
-          <ThemedText style={styles.totalVolumeText}>
-            총 {item.totalVolume.toFixed(0)}ml
-          </ThemedText>
-          <ThemedText style={styles.totalAlcoholText}>
-            알코올 {item.totalAlcoholContent.toFixed(1)}g
-          </ThemedText>
-        </View>
-      </View>
-
-      {/* 음료 상세 목록 */}
-      <View style={styles.drinksContainer}>
-        {item.drinks.map((drink, index) => (
-          <View key={index} style={styles.drinkItem}>
-            <View style={styles.drinkInfo}>
-              <ThemedText style={styles.drinkIcon}>
-                {getDrinkIcon(drink.originalType)}
-              </ThemedText>
-              <View style={styles.drinkDetails}>
-                <ThemedText style={styles.drinkName}>{drink.type}</ThemedText>
-                <ThemedText style={styles.drinkSpecs}>
-                  {drink.volume}ml × {drink.quantity}개 (
-                  {drink.alcoholPercentage}%)
-                </ThemedText>
-              </View>
+  // 헤더 컴포넌트 (통계 정보)
+  const renderHeader = useCallback(
+    () => (
+      <>
+        <View style={styles.cardContainer}>
+          <View style={styles.statsContainer}>
+            <View style={styles.statsRow}>
+              <ThemedText style={styles.statLabel}>기록 일수</ThemedText>
+              <ThemedText style={styles.statValue}>{totalDays}일</ThemedText>
             </View>
-            <ThemedText style={styles.drinkAlcoholContent}>
-              {drink.alcoholContent.toFixed(1)}g
+            <View style={styles.statsRow}>
+              <ThemedText style={styles.statLabel}>기록 횟수</ThemedText>
+              <ThemedText style={styles.statValue}>{totalRecords}회</ThemedText>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.cardContainer}>
+          <Button
+            title="모든 음주 기록 삭제"
+            onPress={onResetPress}
+            buttonStyle={styles.deleteAllButton}
+            titleStyle={styles.deleteAllButtonText}
+          />
+        </View>
+      </>
+    ),
+    [totalDays, totalRecords, onResetPress, styles]
+  );
+
+  const renderRecordItem = ({ item }: { item: AlcoholRecordItem }) => {
+    const isExpanded = expandedRecords.has(item.id);
+
+    return (
+      <View style={styles.recordItem}>
+        {/* 첫 번째 행: 기본 정보 */}
+        <View style={styles.recordMainRow}>
+          <View style={styles.recordInfo}>
+            <ThemedText style={styles.recordDate}>
+              {formatDate(item.date)} {item.time}
+            </ThemedText>
+            <ThemedText style={styles.recordSummary}>
+              총 {item.totalVolume.toFixed(0)}ml • 알코올{" "}
+              {item.totalAlcoholContent.toFixed(1)}g
             </ThemedText>
           </View>
-        ))}
+          <View style={styles.recordActions}>
+            {/* 수정/삭제 버튼 */}
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => handleEditRecord(item)}
+            >
+              <ThemedText style={styles.editButtonText}>수정</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteRecord(item.id, item.date)}
+            >
+              <ThemedText style={styles.deleteButtonText}>삭제</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* 두 번째 행: 토글 버튼과 간략 음료 정보 */}
+        <View style={styles.recordSubRow}>
+          <TouchableOpacity
+            style={styles.toggleButton}
+            onPress={() => toggleRecordExpansion(item.id)}
+          >
+            <ThemedText style={styles.toggleButtonText}>
+              {isExpanded ? "▼" : "▶"}
+            </ThemedText>
+          </TouchableOpacity>
+          <ThemedText style={styles.drinkSummary}>
+            {item.drinks.length}종류의 음료 •{" "}
+            {item.drinks
+              .map((drink) => getDrinkIcon(drink.originalType))
+              .join(" ")}
+          </ThemedText>
+        </View>
+
+        {/* 음료 상세 목록 (토글에 따라 표시/숨김) */}
+        {isExpanded && (
+          <View style={styles.drinksContainer}>
+            {item.drinks.map((drink, index) => (
+              <View key={index} style={styles.drinkItem}>
+                <View style={styles.drinkInfo}>
+                  <ThemedText style={styles.drinkIcon}>
+                    {getDrinkIcon(drink.originalType)}
+                  </ThemedText>
+                  <View style={styles.drinkDetails}>
+                    <ThemedText style={styles.drinkName}>
+                      {drink.type}
+                    </ThemedText>
+                    <ThemedText style={styles.drinkSpecs}>
+                      {drink.volume}ml × {drink.quantity}개 (
+                      {drink.alcoholPercentage}%)
+                    </ThemedText>
+                  </View>
+                </View>
+                <ThemedText style={styles.drinkAlcoholContent}>
+                  {drink.alcoholContent.toFixed(1)}g
+                </ThemedText>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
@@ -183,18 +385,41 @@ const AlcoholRecordsScreen: React.FC = () => {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.title}>음주 기록</ThemedText>
-
       <FlatList
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
         data={records}
         renderItem={renderRecordItem}
         keyExtractor={(item: AlcoholRecordItem) => item.id}
-        contentContainerStyle={styles.listContainer}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmptyState}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        ListEmptyComponent={renderEmptyState}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={20}
+        updateCellsBatchingPeriod={50}
+        getItemLayout={(data, index) => ({
+          length: 80, // 예상 아이템 높이
+          offset: 80 * index,
+          index,
+        })}
+      />
+
+      {/* 수정 모달 */}
+      <AlcoholRecordModal
+        visible={editModalVisible}
+        onClose={() => {
+          setEditModalVisible(false);
+          setEditingRecord(null);
+        }}
+        onSave={handleSaveEditedRecord}
+        selectedDate={editingRecord?.date || ""}
+        editingRecord={editingRecord || undefined}
+        isEditMode={true}
       />
     </ThemedView>
   );

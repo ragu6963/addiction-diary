@@ -29,13 +29,31 @@ interface AlcoholRecordModalProps {
   onClose: () => void;
   onSave: (record: AlcoholRecord) => void;
   selectedDate: string;
+  editingRecord?: AlcoholRecord; // 수정할 기록 (선택사항)
+  isEditMode?: boolean; // 수정 모드 여부
 }
 
 const AlcoholRecordModal = memo<AlcoholRecordModalProps>(
-  ({ visible, onClose, onSave, selectedDate }) => {
+  ({
+    visible,
+    onClose,
+    onSave,
+    selectedDate,
+    editingRecord,
+    isEditMode = false,
+  }) => {
     const theme = useTheme();
     const styles = createAlcoholRecordModalStyles(theme);
     const [drinks, setDrinks] = useState<DrinkItem[]>([]);
+
+    // 수정 모드일 때 기존 데이터로 초기화
+    React.useEffect(() => {
+      if (isEditMode && editingRecord) {
+        setDrinks(editingRecord.drinks);
+      } else {
+        setDrinks([]);
+      }
+    }, [isEditMode, editingRecord, visible]);
 
     // 음료 추가
     const addDrink = useCallback(
@@ -120,13 +138,22 @@ const AlcoholRecordModal = memo<AlcoholRecordModalProps>(
 
       const now = new Date();
       const record: AlcoholRecord = {
-        id: `${selectedDate}-${Date.now()}`,
+        id:
+          isEditMode && editingRecord
+            ? editingRecord.id
+            : `${selectedDate}-${Date.now()}`,
         date: selectedDate,
-        timestamp: now.toISOString(),
-        time: now.toLocaleTimeString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        timestamp:
+          isEditMode && editingRecord
+            ? editingRecord.timestamp
+            : now.toISOString(),
+        time:
+          isEditMode && editingRecord
+            ? editingRecord.time
+            : now.toLocaleTimeString("ko-KR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
         drinks,
         totalAlcoholContent,
         totalVolume,
@@ -142,6 +169,8 @@ const AlcoholRecordModal = memo<AlcoholRecordModalProps>(
       selectedDate,
       onSave,
       onClose,
+      isEditMode,
+      editingRecord,
     ]);
 
     // 음료 타입별 아이콘
@@ -186,7 +215,9 @@ const AlcoholRecordModal = memo<AlcoholRecordModalProps>(
             <TouchableOpacity onPress={onClose}>
               <Text style={styles.headerButton}>취소</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>음주 기록</Text>
+            <Text style={styles.headerTitle}>
+              {isEditMode ? "음주 기록 수정" : "음주 기록"}
+            </Text>
             <TouchableOpacity onPress={handleSave}>
               <Text style={styles.headerSaveButton}>저장</Text>
             </TouchableOpacity>

@@ -62,7 +62,7 @@ const AddictionRecordsScreen = memo(() => {
       setTotalRecords(recordList.length);
       setTotalDays(Object.keys(data).length);
     } catch (error) {
-      console.error("금욕 기록 로드 실패:", error);
+      console.error("욕구 기록 로드 실패:", error);
     }
   }, []);
 
@@ -72,7 +72,7 @@ const AddictionRecordsScreen = memo(() => {
 
   const onDeleteRecord = useCallback(
     (recordId: string, date: string) => {
-      Alert.alert("기록 삭제", "이 금욕 기록을 삭제하시겠습니까?", [
+      Alert.alert("기록 삭제", "이 욕구 기록을 삭제하시겠습니까?", [
         { text: "취소", style: "cancel" },
         {
           text: "삭제",
@@ -95,8 +95,8 @@ const AddictionRecordsScreen = memo(() => {
 
   const onResetPress = useCallback(() => {
     Alert.alert(
-      "모든 금욕 기록 삭제",
-      "모든 금욕 기록을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.",
+      "모든 욕구 기록 삭제",
+      "모든 욕구 기록을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.",
       [
         { text: "취소", style: "cancel" },
         {
@@ -106,7 +106,7 @@ const AddictionRecordsScreen = memo(() => {
             try {
               await clearAllAddictionRecords();
               await loadRecords();
-              Alert.alert("완료", "모든 금욕 기록이 삭제되었습니다.");
+              Alert.alert("완료", "모든 욕구 기록이 삭제되었습니다.");
             } catch (error) {
               console.error("기록 초기화 실패:", error);
               Alert.alert("오류", "기록 초기화 중 오류가 발생했습니다.");
@@ -123,9 +123,6 @@ const AddictionRecordsScreen = memo(() => {
       return (
         <View style={styles.recordItem}>
           <View style={styles.recordInfo}>
-            <View style={styles.recordHeader}>
-              <ThemedText style={styles.recordType}>🔴 금욕 기록</ThemedText>
-            </View>
             <ThemedText style={styles.recordDate}>
               {item.formattedDate} {item.time}
             </ThemedText>
@@ -150,7 +147,7 @@ const AddictionRecordsScreen = memo(() => {
   const renderEmptyComponent = useCallback(
     () => (
       <ThemedText style={styles.emptyText}>
-        아직 금욕 기록이 없습니다.
+        아직 욕구 기록이 없습니다.
       </ThemedText>
     ),
     [styles.emptyText]
@@ -161,7 +158,6 @@ const AddictionRecordsScreen = memo(() => {
     () => (
       <>
         <View style={styles.cardContainer}>
-          <ThemedText style={styles.statsTitle}>욕구 기록</ThemedText>
           <View style={styles.statsContainer}>
             <View style={styles.statsRow}>
               <ThemedText style={styles.statLabel}>기록 일수</ThemedText>
@@ -176,7 +172,7 @@ const AddictionRecordsScreen = memo(() => {
 
         <View style={styles.cardContainer}>
           <Button
-            title="모든 금욕 기록 삭제"
+            title="모든 욕구 기록 삭제"
             onPress={onResetPress}
             buttonStyle={styles.deleteAllButton}
             titleStyle={styles.deleteAllButtonText}

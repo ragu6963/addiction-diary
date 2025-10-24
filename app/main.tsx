@@ -68,16 +68,16 @@ export default function MainScreen() {
 
         <ThemedText style={staticMainStyles.navTitle}>
           {currentScreen === "calendar"
-            ? "금욕 달력"
+            ? "욕구 달력"
             : currentScreen === "alcohol-calendar"
-            ? "금주 달력"
+            ? "음주 달력"
             : currentScreen === "statistics"
             ? "통계"
             : currentScreen === "addiction-records"
-            ? "금욕 기록"
+            ? "욕구 기록"
             : currentScreen === "alcohol-records"
-            ? "금주 기록"
-            : "금욕 달력"}
+            ? "음주 기록"
+            : "욕구 달력"}
         </ThemedText>
 
         <ThemedView style={staticMainStyles.navSpacer} />
@@ -110,7 +110,7 @@ export default function MainScreen() {
           onPress={() => navigateToScreen("calendar")}
         >
           <ThemedText style={staticMainStyles.menuItemText}>
-            금욕 달력
+            욕구 달력
           </ThemedText>
         </TouchableOpacity>
 
@@ -119,7 +119,7 @@ export default function MainScreen() {
           onPress={() => navigateToScreen("alcohol-calendar")}
         >
           <ThemedText style={staticMainStyles.menuItemText}>
-            금주 달력
+            음주 달력
           </ThemedText>
         </TouchableOpacity>
 
@@ -128,7 +128,7 @@ export default function MainScreen() {
           onPress={() => navigateToScreen("addiction-records")}
         >
           <ThemedText style={staticMainStyles.menuItemText}>
-            금욕 기록
+            욕구 기록
           </ThemedText>
         </TouchableOpacity>
 
@@ -137,7 +137,7 @@ export default function MainScreen() {
           onPress={() => navigateToScreen("alcohol-records")}
         >
           <ThemedText style={staticMainStyles.menuItemText}>
-            금주 기록
+            음주 기록
           </ThemedText>
         </TouchableOpacity>
 

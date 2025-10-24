@@ -8,6 +8,43 @@ export const createAlcoholRecordsStyles = (theme: Theme) => {
       flex: 1,
       padding: theme.spacing[4],
     },
+    scrollContent: {
+      paddingBottom: theme.spacing[4],
+    },
+
+    // 카드 컨테이너
+    cardContainer: {
+      backgroundColor: "transparent",
+      marginBottom: theme.spacing[6],
+      padding: 0,
+    },
+
+    // 통계 섹션
+    statsTitle: {
+      fontSize: theme.typography.fontSize.lg,
+      fontWeight: theme.typography.fontWeight.bold,
+      color: theme.colors.text,
+      marginBottom: theme.spacing[3],
+      textAlign: "center",
+    },
+    statsContainer: {
+      gap: theme.spacing[2],
+    },
+    statsRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: theme.spacing[2],
+    },
+    statLabel: {
+      fontSize: theme.typography.fontSize.base,
+      color: theme.colors.textSecondary,
+    },
+    statValue: {
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.bold,
+      color: theme.colors.text,
+    },
     title: {
       fontSize: theme.typography.fontSize["2xl"],
       fontWeight: theme.typography.fontWeight.bold,
@@ -28,32 +65,93 @@ export const createAlcoholRecordsStyles = (theme: Theme) => {
     // 기록 아이템
     recordItem: {
       backgroundColor: "transparent",
-      paddingVertical: theme.spacing[4],
+      paddingVertical: theme.spacing[3],
       paddingHorizontal: 0,
-      marginBottom: theme.spacing[4],
+      marginBottom: theme.spacing[2],
     },
-    recordHeader: {
+    recordMainRow: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: theme.spacing[4],
-      paddingBottom: theme.spacing[2],
+      marginBottom: theme.spacing[2],
     },
-    dateTimeContainer: {
+    recordSubRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing[2],
+    },
+    recordInfo: {
       flex: 1,
     },
-    dateText: {
-      fontSize: theme.typography.fontSize.lg,
-      fontWeight: theme.typography.fontWeight.medium,
-      color: theme.colors.text,
-      marginBottom: theme.spacing[1],
+    recordType: {
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.bold,
+      color: theme.appColors.alcohol.primary,
     },
-    timeText: {
+    recordDate: {
       fontSize: theme.typography.fontSize.sm,
       color: theme.colors.textSecondary,
     },
-    summaryContainer: {
-      alignItems: "flex-end",
+    recordSummary: {
+      fontSize: theme.typography.fontSize.xs,
+      color: theme.colors.textSecondary,
+      marginTop: theme.spacing[1],
+    },
+    drinkSummary: {
+      fontSize: theme.typography.fontSize.xs,
+      color: theme.colors.textSecondary,
+      fontStyle: "italic",
+    },
+    recordActions: {
+      marginLeft: theme.spacing[2],
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing[1],
+    },
+    toggleButton: {
+      backgroundColor: "transparent",
+      paddingHorizontal: theme.spacing[1],
+      paddingVertical: theme.spacing[1],
+      minWidth: 24,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    toggleButtonText: {
+      color: theme.colors.textSecondary,
+      fontSize: theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.medium,
+    },
+    editButton: {
+      backgroundColor: "transparent",
+      paddingHorizontal: theme.spacing[1],
+      paddingVertical: theme.spacing[1],
+    },
+    editButtonText: {
+      color: theme.colors.primary,
+      fontSize: theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.medium,
+    },
+    deleteButton: {
+      backgroundColor: "transparent",
+      paddingHorizontal: theme.spacing[1],
+      paddingVertical: theme.spacing[1],
+    },
+    deleteButtonText: {
+      color: theme.colors.error,
+      fontSize: theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.medium,
+    },
+
+    // 삭제 버튼
+    deleteAllButton: {
+      backgroundColor: theme.colors.error,
+      borderRadius: 8,
+      marginTop: theme.spacing[2],
+    },
+    deleteAllButtonText: {
+      color: "white",
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.medium,
     },
     totalVolumeText: {
       fontSize: theme.typography.fontSize.base,
@@ -65,6 +163,12 @@ export const createAlcoholRecordsStyles = (theme: Theme) => {
       fontSize: theme.typography.fontSize.sm,
       color: theme.colors.error,
       fontWeight: theme.typography.fontWeight.medium,
+    },
+    summaryText: {
+      fontSize: theme.typography.fontSize.sm,
+      color: theme.colors.textSecondary,
+      fontStyle: "italic",
+      marginTop: theme.spacing[2],
     },
 
     // 음료 목록

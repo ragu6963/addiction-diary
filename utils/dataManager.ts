@@ -493,6 +493,45 @@ export const deleteAlcoholRecord = async (
 };
 
 /**
+ * 특정 음주 기록을 수정합니다
+ */
+export const updateAlcoholRecord = async (
+  dateStr: string,
+  recordId: string,
+  updatedRecord: AlcoholRecord
+): Promise<AlcoholRecordData> => {
+  const data = await loadAlcoholRecordData();
+
+  if (data[dateStr]) {
+    const recordIndex = data[dateStr].records.findIndex(
+      (r) => r.id === recordId
+    );
+    if (recordIndex !== -1) {
+      const oldRecord = data[dateStr].records[recordIndex];
+
+      // 총합에서 기존 기록 제거
+      data[dateStr].totalAlcoholContent -= oldRecord.totalAlcoholContent;
+      data[dateStr].totalVolume -= oldRecord.totalVolume;
+
+      // 새로운 기록으로 교체
+      data[dateStr].records[recordIndex] = updatedRecord;
+
+      // 총합에 새로운 기록 추가
+      data[dateStr].totalAlcoholContent += updatedRecord.totalAlcoholContent;
+      data[dateStr].totalVolume += updatedRecord.totalVolume;
+
+      // 마지막 기록 시간 업데이트
+      const lastRecord =
+        data[dateStr].records[data[dateStr].records.length - 1];
+      data[dateStr].lastRecordTime = lastRecord.time;
+    }
+  }
+
+  await saveAlcoholRecordData(data);
+  return data;
+};
+
+/**
  * 모든 금주 기록을 삭제합니다
  */
 export const clearAllAlcoholRecords = async (): Promise<void> => {
