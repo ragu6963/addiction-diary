@@ -1,95 +1,55 @@
 import { Theme } from "@/constants/design-tokens";
-import { createCommonStyles, createMixins } from "./common.styles";
+import { StyleSheet } from "react-native";
 
-// 통계 화면 전용 스타일
+// 단순화된 통계 스타일
 export const createStatisticsStyles = (theme: Theme) => {
-  const commonStyles = createCommonStyles(theme);
-  const mixins = createMixins(theme);
-
-  return {
-    ...commonStyles,
-    // 통계 전용 스타일
-    streakDisplay: {
-      alignItems: "center" as const,
-      marginBottom: theme.spacing[3],
-      paddingVertical: theme.spacing[2],
-      width: "100%" as const,
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: theme.spacing[4],
     },
-    streakNumber: {
-      fontSize: theme.typography.fontSize["3xl"],
+    scrollView: {
+      flex: 1,
+    },
+    title: {
+      fontSize: theme.typography.fontSize["2xl"],
       fontWeight: theme.typography.fontWeight.bold,
-      marginBottom: theme.spacing[1],
-    },
-    streakMessage: {
-      fontSize: theme.typography.fontSize.sm,
-      opacity: 0.8,
-      textAlign: "center" as const,
       color: theme.colors.text,
-      paddingHorizontal: theme.spacing[1],
-      lineHeight: theme.typography.lineHeight.sm,
+      marginBottom: theme.spacing[6],
+      textAlign: "center",
     },
-    goalSection: {
-      alignItems: "center" as const,
-      paddingVertical: theme.spacing[4],
+    section: {
+      marginBottom: theme.spacing[6],
     },
-    goalTitle: {
+    sectionTitle: {
       fontSize: theme.typography.fontSize.lg,
       fontWeight: theme.typography.fontWeight.bold,
-      marginBottom: theme.spacing[3],
       color: theme.colors.text,
+      marginBottom: theme.spacing[4],
+      textAlign: "center",
     },
-    goalText: {
-      fontSize: theme.typography.fontSize.base,
-      textAlign: "center" as const,
-      lineHeight: theme.typography.lineHeight.base,
-      opacity: 0.8,
+    statsGrid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: theme.spacing[3],
+    },
+    statCard: {
+      width: "48%",
+      backgroundColor: "transparent",
+      padding: theme.spacing[3],
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    statValue: {
+      fontSize: theme.typography.fontSize["3xl"],
+      fontWeight: theme.typography.fontWeight.bold,
       color: theme.colors.text,
+      marginBottom: theme.spacing[2],
     },
-    // 비교 섹션 스타일
-    comparisonContainer: {
-      ...mixins.flexRowBetween,
-      gap: theme.spacing[2],
-    },
-    comparisonColumn: {
-      ...mixins.columnLayout,
-    },
-    comparisonTitle: {
+    statLabel: {
       fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.bold,
-      marginBottom: theme.spacing[2],
-      textAlign: "center" as const,
+      color: theme.colors.textSecondary,
+      textAlign: "center",
     },
-    // 최근 통계 섹션 스타일
-    recentStatsContainer: {
-      ...mixins.flexRowBetween,
-      gap: theme.spacing[2],
-    },
-    recentStatsColumn: {
-      ...mixins.columnLayout,
-    },
-    recentStatsTitle: {
-      fontSize: theme.typography.fontSize.sm,
-      fontWeight: theme.typography.fontWeight.bold,
-      marginBottom: theme.spacing[2],
-      textAlign: "center" as const,
-    },
-    // 연속 현황 비교 스타일
-    streakComparisonContainer: {
-      ...mixins.flexRowBetween,
-      gap: theme.spacing[2],
-      paddingHorizontal: theme.spacing[2],
-    },
-    streakComparisonColumn: {
-      flex: 1,
-      alignItems: "center" as const,
-      paddingVertical: theme.spacing[2],
-      minHeight: 200, // 최소 높이 보장
-    },
-    streakComparisonTitle: {
-      fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.bold,
-      marginBottom: theme.spacing[2],
-      textAlign: "center" as const,
-    },
-  };
+  });
 };

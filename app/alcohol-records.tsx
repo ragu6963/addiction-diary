@@ -288,36 +288,23 @@ const AlcoholRecordsScreen: React.FC = () => {
 
     return (
       <View style={styles.recordItem}>
-        {/* 첫 번째 행: 기본 정보 */}
-        <View style={styles.recordMainRow}>
-          <View style={styles.recordInfo}>
-            <ThemedText style={styles.recordDate}>
-              {formatDate(item.date)} {item.time}
-            </ThemedText>
-            <ThemedText style={styles.recordSummary}>
-              총 {item.totalVolume.toFixed(0)}ml • 알코올{" "}
-              {item.totalAlcoholContent.toFixed(1)}g
-            </ThemedText>
-          </View>
-          <View style={styles.recordActions}>
-            {/* 수정/삭제 버튼 */}
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={() => handleEditRecord(item)}
-            >
-              <ThemedText style={styles.editButtonText}>수정</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDeleteRecord(item.id, item.date)}
-            >
-              <ThemedText style={styles.deleteButtonText}>삭제</ThemedText>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.recordInfo}>
+          <ThemedText style={styles.recordDate}>
+            {formatDate(item.date)} {item.time}
+          </ThemedText>
+          <ThemedText style={styles.recordSummary}>
+            총 {item.totalVolume.toFixed(0)}ml • 알코올{" "}
+            {item.totalAlcoholContent.toFixed(1)}g
+          </ThemedText>
+          <ThemedText style={styles.drinkSummary}>
+            {item.drinks.length}종류의 음료 •{" "}
+            {item.drinks
+              .map((drink) => getDrinkIcon(drink.originalType))
+              .join(" ")}
+          </ThemedText>
         </View>
-
-        {/* 두 번째 행: 토글 버튼과 간략 음료 정보 */}
-        <View style={styles.recordSubRow}>
+        <View style={styles.recordActions}>
+          {/* 토글 버튼 */}
           <TouchableOpacity
             style={styles.toggleButton}
             onPress={() => toggleRecordExpansion(item.id)}
@@ -326,12 +313,19 @@ const AlcoholRecordsScreen: React.FC = () => {
               {isExpanded ? "▼" : "▶"}
             </ThemedText>
           </TouchableOpacity>
-          <ThemedText style={styles.drinkSummary}>
-            {item.drinks.length}종류의 음료 •{" "}
-            {item.drinks
-              .map((drink) => getDrinkIcon(drink.originalType))
-              .join(" ")}
-          </ThemedText>
+          {/* 수정/삭제 버튼 */}
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => handleEditRecord(item)}
+          >
+            <ThemedText style={styles.editButtonText}>수정</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteRecord(item.id, item.date)}
+          >
+            <ThemedText style={styles.deleteButtonText}>삭제</ThemedText>
+          </TouchableOpacity>
         </View>
 
         {/* 음료 상세 목록 (토글에 따라 표시/숨김) */}

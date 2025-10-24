@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
 import { useTheme } from "@/hooks/use-styles";
 import { createAddictionRecordsStyles } from "@/styles";
 import {
@@ -184,26 +185,28 @@ const AddictionRecordsScreen = memo(() => {
   );
 
   return (
-    <FlatList
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      data={records}
-      renderItem={renderRecordItem}
-      keyExtractor={keyExtractor}
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderEmptyComponent}
-      showsVerticalScrollIndicator={false}
-      removeClippedSubviews={true}
-      maxToRenderPerBatch={10}
-      windowSize={10}
-      initialNumToRender={20}
-      updateCellsBatchingPeriod={50}
-      getItemLayout={(data, index) => ({
-        length: 60, // 예상 아이템 높이
-        offset: 60 * index,
-        index,
-      })}
-    />
+    <ThemedView style={styles.container}>
+      <FlatList
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        data={records}
+        renderItem={renderRecordItem}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmptyComponent}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={20}
+        updateCellsBatchingPeriod={50}
+        getItemLayout={(data, index) => ({
+          length: 60, // 예상 아이템 높이
+          offset: 60 * index,
+          index,
+        })}
+      />
+    </ThemedView>
   );
 });
 
