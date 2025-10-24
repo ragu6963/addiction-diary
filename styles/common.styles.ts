@@ -24,10 +24,29 @@ export const createMixins = (theme: Theme) => ({
     alignItems: "center" as const,
   },
 
+  // Flex 행 레이아웃 (시작 정렬)
+  flexRowStart: {
+    flexDirection: "row" as const,
+    justifyContent: "flex-start" as const,
+    alignItems: "center" as const,
+  },
+
+  // Flex 행 레이아웃 (끝 정렬)
+  flexRowEnd: {
+    flexDirection: "row" as const,
+    justifyContent: "flex-end" as const,
+    alignItems: "center" as const,
+  },
+
   // 컬럼 레이아웃 (미니멀)
   columnLayout: {
     flex: 1,
     padding: theme.spacing[2],
+    backgroundColor: "transparent",
+  },
+
+  // 투명 배경
+  transparentBackground: {
     backgroundColor: "transparent",
   },
 
@@ -50,21 +69,79 @@ export const createMixins = (theme: Theme) => ({
     },
   },
 
-  // 버튼 스타일 변형 (완전 미니멀)
+  // 버튼 스타일 변형
   buttonVariants: {
     primary: {
-      backgroundColor: "transparent",
+      backgroundColor: theme.colors.primary,
       paddingVertical: theme.spacing[2],
       paddingHorizontal: theme.spacing[3],
-      width: "40%",
-      alignSelf: "center" as const,
+      borderRadius: 0,
     },
     secondary: {
+      backgroundColor: theme.colors.secondary,
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[3],
+      borderRadius: 0,
+    },
+    outline: {
+      backgroundColor: "transparent",
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[3],
+    },
+    ghost: {
       backgroundColor: "transparent",
       paddingVertical: theme.spacing[2],
       paddingHorizontal: theme.spacing[3],
-      width: "40%",
-      alignSelf: "center" as const,
+    },
+  },
+
+  // 카드 스타일 변형
+  cardVariants: {
+    default: {
+      backgroundColor: "transparent",
+      padding: theme.spacing[3],
+      marginBottom: theme.spacing[3],
+    },
+    elevated: {
+      backgroundColor: theme.colors.background,
+      padding: theme.spacing[3],
+      marginBottom: theme.spacing[3],
+      shadowColor: theme.colors.neutral[900],
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    minimal: {
+      backgroundColor: "transparent",
+      padding: 0,
+      marginBottom: theme.spacing[2],
+    },
+  },
+
+  // 텍스트 스타일 변형
+  textVariants: {
+    heading: {
+      fontSize: theme.typography.fontSize.lg,
+      fontWeight: theme.typography.fontWeight.semibold,
+      color: theme.colors.text,
+    },
+    body: {
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.normal,
+      color: theme.colors.text,
+    },
+    caption: {
+      fontSize: theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.normal,
+      color: theme.colors.textSecondary,
+    },
+    label: {
+      fontSize: theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.medium,
+      color: theme.colors.text,
     },
   },
 });

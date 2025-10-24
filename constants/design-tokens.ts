@@ -220,6 +220,7 @@ export const appColors = {
   // 공통 색상
   common: {
     white: "#ffffff",
+    black: "#000000",
     transparent: "transparent",
   },
 } as const;

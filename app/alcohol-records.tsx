@@ -1,6 +1,7 @@
 import AlcoholRecordModal from "@/components/alcohol/AlcoholRecordModal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { Button } from "@/components/ui";
 import { useTheme } from "@/hooks/use-styles";
 import { createAlcoholRecordsStyles } from "@/styles";
 import {
@@ -10,7 +11,13 @@ import {
   loadAlcoholRecordData,
   updateAlcoholRecord,
 } from "@/utils/dataManager";
-import { Button } from "@rneui/themed";
+import { DrinkType, getDrinkIcon, getDrinkName } from "@/utils/drinkConstants";
+import { formatDateShort } from "@/utils/formatters";
+// import {
+//   convertDateDataToRecords,
+//   calculateRecordStats,
+//   safeSortArray
+// } from "@/utils/dataTransformers";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
@@ -52,32 +59,13 @@ const AlcoholRecordsScreen: React.FC = () => {
   );
   const [totalRecords, setTotalRecords] = useState(0);
   const [totalDays, setTotalDays] = useState(0);
-
-  const getDrinkName = (type: string): string => {
-    const drinkNames: { [key: string]: string } = {
-      beer: "맥주",
-      soju: "소주",
-      wine: "와인",
-      whiskey: "위스키",
-      cocktail: "칵테일",
-      makgeolli: "막걸리",
-      other: "기타",
-    };
-    return drinkNames[type] || type;
-  };
-
-  const getDrinkIcon = (type: string): string => {
-    const drinkIcons: { [key: string]: string } = {
-      beer: "🍺",
-      soju: "🍶",
-      wine: "🍷",
-      whiskey: "🥃",
-      cocktail: "🍸",
-      makgeolli: "🍶",
-      other: "🍻",
-    };
-    return drinkIcons[type] || "🍻";
-  };
+  // FlatList 성능 최적화 (주석 처리 - 현재 사용하지 않음)
+  // const keyExtractor = useCallback((item: AlcoholRecordItem) => item.id, []);
+  // const getItemLayout = useCallback((data: any, index: number) => ({
+  //   length: 120, // 예상 아이템 높이
+  //   offset: 120 * index,
+  //   index,
+  // }), []);
 
   const loadData = useCallback(async () => {
     try {
@@ -245,14 +233,6 @@ const AlcoholRecordsScreen: React.FC = () => {
     );
   }, [loadData]);
 
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const dayOfWeek = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
-    return `${month}/${day} (${dayOfWeek})`;
-  };
-
   // 헤더 컴포넌트 (통계 정보)
   const renderHeader = useCallback(
     () => (
@@ -290,7 +270,7 @@ const AlcoholRecordsScreen: React.FC = () => {
       <View style={styles.recordItem}>
         <View style={styles.recordInfo}>
           <ThemedText style={styles.recordDate}>
-            {formatDate(item.date)} {item.time}
+            {formatDateShort(item.date)} {item.time}
           </ThemedText>
           <ThemedText style={styles.recordSummary}>
             총 {item.totalVolume.toFixed(0)}ml • 알코올{" "}
@@ -299,7 +279,7 @@ const AlcoholRecordsScreen: React.FC = () => {
           <ThemedText style={styles.drinkSummary}>
             {item.drinks.length}종류의 음료 •{" "}
             {item.drinks
-              .map((drink) => getDrinkIcon(drink.originalType))
+              .map((drink) => getDrinkIcon(drink.originalType as DrinkType))
               .join(" ")}
           </ThemedText>
         </View>
@@ -335,7 +315,7 @@ const AlcoholRecordsScreen: React.FC = () => {
               <View key={index} style={styles.drinkItem}>
                 <View style={styles.drinkInfo}>
                   <ThemedText style={styles.drinkIcon}>
-                    {getDrinkIcon(drink.originalType)}
+                    {getDrinkIcon(drink.originalType as DrinkType)}
                   </ThemedText>
                   <View style={styles.drinkDetails}>
                     <ThemedText style={styles.drinkName}>

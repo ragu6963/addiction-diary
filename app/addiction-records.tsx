@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { Button } from "@/components/ui";
 import { useTheme } from "@/hooks/use-styles";
 import { createAddictionRecordsStyles } from "@/styles";
 import {
@@ -7,7 +8,7 @@ import {
   deleteAddictionRecord,
   loadRecordData,
 } from "@/utils/dataManager";
-import { Button } from "@rneui/themed";
+import { formatDateShort } from "@/utils/formatters";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { Alert, FlatList, TouchableOpacity, View } from "react-native";
 
@@ -26,14 +27,6 @@ const AddictionRecordsScreen = memo(() => {
   const [totalRecords, setTotalRecords] = useState(0);
   const [totalDays, setTotalDays] = useState(0);
 
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    const dayOfWeek = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
-    return `${month}/${day} (${dayOfWeek})`;
-  };
-
   const loadRecords = useCallback(async () => {
     try {
       const data = await loadRecordData();
@@ -47,7 +40,7 @@ const AddictionRecordsScreen = memo(() => {
             id: record.id,
             date: date,
             time: record.time,
-            formattedDate: formatDate(date),
+            formattedDate: formatDateShort(date),
           });
         });
       });

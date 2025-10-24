@@ -1,4 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { generateId, getCurrentTimeString } from "./commonUtils";
+import { DrinkType, DrinkUnit } from "./drinkConstants";
+import {
+  AppError,
+  createErrorInfo,
+  logError,
+  withStorageErrorHandling,
+} from "./errorHandler";
+import { formatDate } from "./formatters";
 
 export interface RecordData {
   [key: string]: {
@@ -35,23 +44,6 @@ export interface DrinkItem {
   unit: DrinkUnit; // 단위 (병, 캔, 잔 등)
 }
 
-export type DrinkType =
-  | "beer" // 맥주
-  | "soju" // 소주
-  | "wine" // 와인
-  | "whiskey" // 위스키
-  | "cocktail" // 칵테일
-  | "makgeolli" // 막걸리
-  | "other"; // 기타
-
-export type DrinkUnit =
-  | "bottle" // 병
-  | "can" // 캔
-  | "glass" // 잔
-  | "shot" // 잔
-  | "cup" // 컵
-  | "ml"; // 밀리리터
-
 // 새로운 음주 기록 데이터 구조
 export interface AlcoholRecordData {
   [date: string]: {
@@ -78,37 +70,6 @@ export interface MarkedDates {
 const STORAGE_KEY = "masturbationRecords";
 const ALCOHOL_STORAGE_KEY = "alcoholRecords";
 
-// 음료 프리셋 데이터
-export const DRINK_PRESETS: Record<DrinkType, Partial<DrinkItem>[]> = {
-  beer: [
-    { type: "beer", volume: 500, alcoholPercentage: 4.5, unit: "bottle" }, // 일반 맥주
-    { type: "beer", volume: 330, alcoholPercentage: 5.0, unit: "can" }, // 캔 맥주
-    { type: "beer", volume: 250, alcoholPercentage: 4.5, unit: "glass" }, // 맥주 잔
-  ],
-  soju: [
-    { type: "soju", volume: 360, alcoholPercentage: 17.0, unit: "bottle" }, // 일반 소주
-    { type: "soju", volume: 50, alcoholPercentage: 17.0, unit: "shot" }, // 소주 잔
-  ],
-  wine: [
-    { type: "wine", volume: 750, alcoholPercentage: 12.0, unit: "bottle" }, // 와인 병
-    { type: "wine", volume: 150, alcoholPercentage: 12.0, unit: "glass" }, // 와인 잔
-  ],
-  whiskey: [
-    { type: "whiskey", volume: 30, alcoholPercentage: 40.0, unit: "shot" }, // 위스키 잔
-    { type: "whiskey", volume: 700, alcoholPercentage: 40.0, unit: "bottle" }, // 위스키 병
-  ],
-  cocktail: [
-    { type: "cocktail", volume: 200, alcoholPercentage: 15.0, unit: "glass" }, // 칵테일 잔
-  ],
-  makgeolli: [
-    { type: "makgeolli", volume: 750, alcoholPercentage: 6.0, unit: "bottle" }, // 막걸리 병
-    { type: "makgeolli", volume: 200, alcoholPercentage: 6.0, unit: "cup" }, // 막걸리 컵
-  ],
-  other: [
-    { type: "other", volume: 100, alcoholPercentage: 0, unit: "ml" }, // 기타
-  ],
-};
-
 // 알코올 함량 계산 함수
 export const calculateAlcoholContent = (
   volume: number,
@@ -116,16 +77,6 @@ export const calculateAlcoholContent = (
 ): number => {
   // 알코올 밀도: 0.789 g/ml
   return ((volume * alcoholPercentage) / 100) * 0.789;
-};
-
-// 음료 단위별 기본 용량 (ml)
-export const UNIT_VOLUMES: Record<DrinkUnit, number> = {
-  bottle: 500, // 기본 병 용량
-  can: 330, // 기본 캔 용량
-  glass: 200, // 기본 잔 용량
-  shot: 30, // 기본 잔 용량
-  cup: 250, // 기본 컵 용량
-  ml: 1, // 밀리리터
 };
 
 // 데이터 캐시 (메모리 캐싱)
@@ -138,69 +89,74 @@ const CACHE_DURATION = 5000; // 5초 캐시
 /**
  * 저장된 데이터를 로드합니다 (캐시 최적화)
  */
-export const loadRecordData = async (): Promise<RecordData> => {
-  try {
-    // 캐시된 데이터가 유효한지 확인
-    const now = Date.now();
-    if (dataCache && now - cacheTimestamp < CACHE_DURATION) {
-      return dataCache;
-    }
+export const loadRecordData = withStorageErrorHandling(
+  async (): Promise<RecordData> => {
+    try {
+      // 캐시된 데이터가 유효한지 확인
+      const now = Date.now();
+      if (dataCache && now - cacheTimestamp < CACHE_DURATION) {
+        return dataCache;
+      }
 
-    const savedData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (!savedData) {
-      dataCache = {};
-      cacheTimestamp = now;
-      return {};
-    }
+      const savedData = await AsyncStorage.getItem(STORAGE_KEY);
+      if (!savedData) {
+        dataCache = {};
+        cacheTimestamp = now;
+        return {};
+      }
 
-    const parsedData = JSON.parse(savedData);
+      const parsedData = JSON.parse(savedData);
 
-    // 기존 데이터가 배열인 경우 (하위 호환성)
-    if (Array.isArray(parsedData)) {
-      const convertedData: RecordData = {};
-      parsedData.forEach((date: string) => {
-        convertedData[date] = {
-          count: 1,
-          lastRecordTime: "기록 시간 없음",
-          records: [
+      // 기존 데이터가 배열인 경우 (하위 호환성)
+      if (Array.isArray(parsedData)) {
+        const convertedData: RecordData = {};
+        parsedData.forEach((date: string) => {
+          convertedData[date] = {
+            count: 1,
+            lastRecordTime: "기록 시간 없음",
+            records: [
+              {
+                id: `${date}-1`,
+                timestamp: new Date(date).toISOString(),
+                time: "기록 시간 없음",
+              },
+            ],
+          };
+        });
+        dataCache = convertedData;
+        cacheTimestamp = now;
+        return convertedData;
+      }
+
+      // 새로운 객체 형태인 경우
+      const recordData: RecordData = {};
+      Object.keys(parsedData).forEach((date) => {
+        const data = parsedData[date];
+        recordData[date] = {
+          count: data.count || 1,
+          lastRecordTime: data.lastRecordTime || "기록 시간 없음",
+          records: data.records || [
             {
               id: `${date}-1`,
               timestamp: new Date(date).toISOString(),
-              time: "기록 시간 없음",
+              time: data.lastRecordTime || "기록 시간 없음",
             },
           ],
         };
       });
-      dataCache = convertedData;
+
+      dataCache = recordData;
       cacheTimestamp = now;
-      return convertedData;
+      return recordData;
+    } catch (error) {
+      const errorInfo = createErrorInfo(error as AppError, undefined, {
+        operation: "loadRecordData",
+      });
+      logError(errorInfo, "DataManager");
+      return {};
     }
-
-    // 새로운 객체 형태인 경우
-    const recordData: RecordData = {};
-    Object.keys(parsedData).forEach((date) => {
-      const data = parsedData[date];
-      recordData[date] = {
-        count: data.count || 1,
-        lastRecordTime: data.lastRecordTime || "기록 시간 없음",
-        records: data.records || [
-          {
-            id: `${date}-1`,
-            timestamp: new Date(date).toISOString(),
-            time: data.lastRecordTime || "기록 시간 없음",
-          },
-        ],
-      };
-    });
-
-    dataCache = recordData;
-    cacheTimestamp = now;
-    return recordData;
-  } catch (error) {
-    console.error("데이터 로드 실패:", error);
-    return {};
   }
-};
+);
 
 /**
  * 데이터를 저장합니다 (캐시 무효화)
@@ -223,12 +179,8 @@ export const saveRecordData = async (data: RecordData): Promise<void> => {
 export const addNewRecord = async (dateStr: string): Promise<RecordData> => {
   const data = await loadRecordData();
   const now = new Date();
-  const timeStr = now.toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  const recordId = `${dateStr}-${Date.now()}`;
+  const timeStr = getCurrentTimeString();
+  const recordId = generateId(dateStr);
 
   if (!data[dateStr]) {
     data[dateStr] = {
@@ -360,28 +312,6 @@ export const calculateLongestStreak = (dates: string[]): number => {
   }
 
   return Math.max(maxStreak, currentStreak);
-};
-
-/**
- * 날짜 포맷팅 함수 (메모이제이션)
- */
-const dateFormatCache = new Map<string, string>();
-
-export const formatDate = (dateStr: string): string => {
-  if (dateFormatCache.has(dateStr)) {
-    return dateFormatCache.get(dateStr)!;
-  }
-
-  const date = new Date(dateStr);
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const dayOfWeek = ["일", "월", "화", "수", "목", "금", "토"][date.getDay()];
-
-  const formatted = `${year}년 ${month}월 ${day}일 (${dayOfWeek})`;
-  dateFormatCache.set(dateStr, formatted);
-
-  return formatted;
 };
 
 /**
@@ -871,5 +801,4 @@ export const invalidateCache = (): void => {
   cacheTimestamp = 0;
   alcoholDataCache = null;
   alcoholCacheTimestamp = 0;
-  dateFormatCache.clear();
 };

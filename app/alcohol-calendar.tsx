@@ -1,5 +1,6 @@
 import AlcoholRecordModal from "@/components/alcohol/AlcoholRecordModal";
 import { ThemedView } from "@/components/themed-view";
+import { Button, Card, Text } from "@/components/ui";
 import { createCalendarTheme, useStyles, useTheme } from "@/hooks/use-styles";
 import { createAlcoholCalendarStyles } from "@/styles/alcohol-calendar.styles";
 import {
@@ -8,7 +9,8 @@ import {
   calculateStreakDays,
   getAlcoholMarkedDates,
 } from "@/utils/dataManager";
-import { Button, Card, Text } from "@rneui/themed";
+import { formatDateToISO, formatMonth } from "@/utils/formatters";
+import { CalendarDay } from "@/utils/types";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, TouchableOpacity } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -76,16 +78,13 @@ const AlcoholCalendarScreen = memo(() => {
 
   // 오늘 날짜 기록 추가
   const onRecordPress = async () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, "0");
-    const date = now.getDate().toString().padStart(2, "0");
-    const dateStr = `${year}-${month}-${date}`;
+    const today = new Date();
+    const dateStr = formatDateToISO(today);
     openRecordModal(dateStr);
   };
 
   // 선택한 날짜 기록 추가
-  const onDayPress = async (day: any) => {
+  const onDayPress = async (day: CalendarDay) => {
     const dateStr = day.dateString; // YYYY-MM-DD 형식
     openRecordModal(dateStr);
   };
@@ -129,9 +128,7 @@ const AlcoholCalendarScreen = memo(() => {
             buttonStyle={styles.navButton}
           />
           <TouchableOpacity onPress={goToToday}>
-            <Text style={styles.monthText}>
-              {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
-            </Text>
+            <Text style={styles.monthText}>{formatMonth(currentMonth)}</Text>
           </TouchableOpacity>
 
           <Button
@@ -170,7 +167,7 @@ const AlcoholCalendarScreen = memo(() => {
         <Button
           title="기록하기"
           onPress={onRecordPress}
-          buttonStyle={styles.recordButton}
+          buttonStyle={styles.recordButton as any}
           titleStyle={styles.recordButtonText}
         />
       </Card>

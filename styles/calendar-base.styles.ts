@@ -62,12 +62,14 @@ export const createCalendarVariantStyles = (
   const baseStyles = createBaseCalendarStyles(theme, accentColor);
 
   // 각 달력별 추가 스타일
-  const mixins = createMixins(theme);
   const variantStyles = {
-    // 공통 기록 버튼 스타일 (테마 색상 적용)
+    // 기록 버튼 스타일 (테마 색상 적용)
     recordButton: {
-      ...mixins.buttonVariants.primary,
       backgroundColor: accentColor,
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[4],
+      width: "40%" as any,
+      alignSelf: "center" as const,
     },
     // 기록 버튼 텍스트 스타일
     recordButtonText: {

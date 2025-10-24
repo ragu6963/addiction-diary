@@ -1,4 +1,5 @@
 import { ThemedView } from "@/components/themed-view";
+import { Button, Card, Text } from "@/components/ui";
 import { createCalendarTheme, useStyles, useTheme } from "@/hooks/use-styles";
 import { createCalendarStyles } from "@/styles/calendar.styles";
 import {
@@ -7,7 +8,13 @@ import {
   loadRecordData,
   MarkedDates,
 } from "@/utils/dataManager";
-import { Button, Card, Text } from "@rneui/themed";
+import {
+  formatCurrentTime,
+  formatDate,
+  formatDateToISO,
+  formatMonth,
+} from "@/utils/formatters";
+import { CalendarDay } from "@/utils/types";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, TouchableOpacity } from "react-native";
 import { Calendar } from "react-native-calendars";
@@ -59,24 +66,13 @@ const CalendarScreen = memo(() => {
   const addRecordForDate = useCallback(
     async (dateStr: string) => {
       try {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString("ko-KR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+        const timeStr = formatCurrentTime();
 
         const isMarked = markedDates[dateStr]?.marked || false;
         const currentCount = markedDates[dateStr]?.count || 0;
 
         // 날짜 포맷팅 (한국어)
-        const selectedDate = new Date(dateStr);
-        const year = selectedDate.getFullYear();
-        const month = selectedDate.getMonth() + 1;
-        const date = selectedDate.getDate();
-        const dayOfWeek = ["일", "월", "화", "수", "목", "금", "토"][
-          selectedDate.getDay()
-        ];
-        const formattedDate = `${year}년 ${month}월 ${date}일 (${dayOfWeek})`;
+        const formattedDate = formatDate(dateStr);
 
         const message = isMarked
           ? `${formattedDate}에 기록을 추가하시겠습니까?\n\n현재 기록: ${currentCount}회\n기록 시간: ${timeStr}`
@@ -102,16 +98,13 @@ const CalendarScreen = memo(() => {
 
   // 오늘 날짜 기록 추가
   const onRecordPress = async () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, "0");
-    const date = now.getDate().toString().padStart(2, "0");
-    const dateStr = `${year}-${month}-${date}`;
+    const today = new Date();
+    const dateStr = formatDateToISO(today);
     await addRecordForDate(dateStr);
   };
 
   // 선택한 날짜 기록 추가
-  const onDayPress = async (day: any) => {
+  const onDayPress = async (day: CalendarDay) => {
     const dateStr = day.dateString; // YYYY-MM-DD 형식
     await addRecordForDate(dateStr);
   };
@@ -155,9 +148,7 @@ const CalendarScreen = memo(() => {
             buttonStyle={styles.navButton}
           />
           <TouchableOpacity onPress={goToToday}>
-            <Text style={styles.monthText}>
-              {currentMonth.getFullYear()}년 {currentMonth.getMonth() + 1}월
-            </Text>
+            <Text style={styles.monthText}>{formatMonth(currentMonth)}</Text>
           </TouchableOpacity>
 
           <Button
@@ -196,7 +187,7 @@ const CalendarScreen = memo(() => {
         <Button
           title="기록하기"
           onPress={onRecordPress}
-          buttonStyle={styles.recordButton}
+          buttonStyle={styles.recordButton as any}
           titleStyle={styles.recordButtonText}
         />
       </Card>

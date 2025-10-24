@@ -60,8 +60,11 @@ export const createRecordsStyles = (theme: Theme) => {
     },
     // 삭제 버튼 스타일 (눈에 띄는 색상)
     deleteAllButton: {
-      ...mixins.buttonVariants.secondary,
       backgroundColor: theme.colors.error,
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[3],
+      width: "40%" as any,
+      alignSelf: "center" as const,
       borderWidth: 0,
     },
     // 삭제 버튼 텍스트 스타일

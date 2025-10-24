@@ -1,3 +1,4 @@
+import { Input, Text } from "@/components/ui";
 import { useTheme } from "@/hooks/use-styles";
 import {
   createAlcoholRecordModalStyles,
@@ -6,12 +7,16 @@ import {
 import {
   AlcoholRecord,
   calculateAlcoholContent,
-  DRINK_PRESETS,
   DrinkItem,
-  DrinkType,
-  UNIT_VOLUMES,
 } from "@/utils/dataManager";
-import { Input, Text } from "@rneui/themed";
+import {
+  DRINK_PRESETS,
+  DrinkType,
+  getDrinkIcon,
+  getDrinkName,
+  UNIT_VOLUMES,
+} from "@/utils/drinkConstants";
+import { formatCurrentTime } from "@/utils/formatters";
 import React, { memo, useCallback, useState } from "react";
 import {
   Alert,
@@ -150,10 +155,7 @@ const AlcoholRecordModal = memo<AlcoholRecordModalProps>(
         time:
           isEditMode && editingRecord
             ? editingRecord.time
-            : now.toLocaleTimeString("ko-KR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
+            : formatCurrentTime(),
         drinks,
         totalAlcoholContent,
         totalVolume,
@@ -172,34 +174,6 @@ const AlcoholRecordModal = memo<AlcoholRecordModalProps>(
       isEditMode,
       editingRecord,
     ]);
-
-    // 음료 타입별 아이콘
-    const getDrinkIcon = (type: DrinkType) => {
-      const icons = {
-        beer: "🍺",
-        soju: "🍶",
-        wine: "🍷",
-        whiskey: "🥃",
-        cocktail: "🍸",
-        makgeolli: "🍶",
-        other: "🥤",
-      };
-      return icons[type];
-    };
-
-    // 음료 타입별 한국어 이름
-    const getDrinkName = (type: DrinkType) => {
-      const names = {
-        beer: "맥주",
-        soju: "소주",
-        wine: "와인",
-        whiskey: "위스키",
-        cocktail: "칵테일",
-        makgeolli: "막걸리",
-        other: "기타",
-      };
-      return names[type];
-    };
 
     return (
       <Modal
