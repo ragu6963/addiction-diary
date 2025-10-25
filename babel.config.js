@@ -1,5 +1,6 @@
 module.exports = function (api) {
-  api.cache(true);
+  // WSL 환경에서 캐싱 충돌 방지
+  api.cache.using(() => process.env.NODE_ENV);
 
   const isDev = api.env("development");
   const isProd = api.env("production");
